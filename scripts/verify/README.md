@@ -6,6 +6,7 @@ This directory stores optional verification scripts for CI and local smoke check
 - `vibe-pack-regression-matrix.ps1`: broad pack-level regression matrix and determinism checks.
 - `vibe-keyword-precision-audit.ps1`: bilingual keyword precision audit (EN/ZH), cross-pack interference gap checks, and full skill-by-skill routing sweep.
 - `vibe-skill-index-routing-audit.ps1`: per-skill keyword index routing checks using common Chinese business phrases and ambiguous same-pack scenarios.
+- `vibe-routing-stability-gate.ps1`: synonym-group and task-cross routing gate. Reports `route_stability`, `top1_top2_gap`, `fallback_rate`, and `misroute_rate`, with optional strict thresholds.
 - `vibe-context-retro-smoke.ps1`: validates Context Retro Advisor integration in SKILL/protocol/fallback docs and main/bundled sync for retro-critical files.
 - `vibe-retro-context-regression-matrix.ps1`: fixed-case regression matrix for retro trigger thresholds and CF-1..CF-6 classification stability.
 - `cer-compare.ps1`: compares two CER JSON reports and outputs Markdown/JSON delta summaries (pattern/fallback/stability/context-pressure/gap).
@@ -20,6 +21,20 @@ Run context retro smoke + deterministic matrix:
 & ".\vibe-context-retro-smoke.ps1"
 & ".\vibe-retro-context-regression-matrix.ps1"
 & ".\vibe-retro-safety-gate.ps1"
+```
+
+## Quick Start (Routing Stability Gate)
+
+Run default gate (recommended first pass):
+
+```powershell
+& ".\vibe-routing-stability-gate.ps1" -WriteArtifacts
+```
+
+Run strict gate (after default gate is passing consistently):
+
+```powershell
+& ".\vibe-routing-stability-gate.ps1" -Strict -WriteArtifacts
 ```
 
 Compare two CER reports and emit delta artifacts:

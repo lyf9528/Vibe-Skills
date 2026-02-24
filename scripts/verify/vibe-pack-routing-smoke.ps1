@@ -1,4 +1,4 @@
-param()
+﻿param()
 
 $ErrorActionPreference = "Stop"
 
@@ -24,6 +24,7 @@ $packManifestPath = Join-Path $configRoot "pack-manifest.json"
 $aliasMapPath = Join-Path $configRoot "skill-alias-map.json"
 $thresholdPath = Join-Path $configRoot "router-thresholds.json"
 $skillKeywordIndexPath = Join-Path $configRoot "skill-keyword-index.json"
+$routingRulesPath = Join-Path $configRoot "skill-routing-rules.json"
 
 $results = @()
 
@@ -32,14 +33,17 @@ $results += Assert-True -Condition (Test-Path -LiteralPath $packManifestPath) -M
 $results += Assert-True -Condition (Test-Path -LiteralPath $aliasMapPath) -Message "skill-alias-map.json exists"
 $results += Assert-True -Condition (Test-Path -LiteralPath $thresholdPath) -Message "router-thresholds.json exists"
 $results += Assert-True -Condition (Test-Path -LiteralPath $skillKeywordIndexPath) -Message "skill-keyword-index.json exists"
+$results += Assert-True -Condition (Test-Path -LiteralPath $routingRulesPath) -Message "skill-routing-rules.json exists"
 
 $packManifest = Get-Content -LiteralPath $packManifestPath -Raw -Encoding UTF8 | ConvertFrom-Json
 $aliasMap = Get-Content -LiteralPath $aliasMapPath -Raw -Encoding UTF8 | ConvertFrom-Json
 $thresholds = Get-Content -LiteralPath $thresholdPath -Raw -Encoding UTF8 | ConvertFrom-Json
 $skillKeywordIndex = Get-Content -LiteralPath $skillKeywordIndexPath -Raw -Encoding UTF8 | ConvertFrom-Json
+$routingRules = Get-Content -LiteralPath $routingRulesPath -Raw -Encoding UTF8 | ConvertFrom-Json
 
 $requiredPackIds = @(
     "orchestration-core",
+    "aios-core",
     "code-quality",
     "data-ml",
     "bio-science",
@@ -50,7 +54,7 @@ $requiredPackIds = @(
 )
 
 $packIds = @($packManifest.packs | ForEach-Object { $_.id })
-$results += Assert-True -Condition ($packIds.Count -ge 8) -Message "at least 8 packs defined"
+$results += Assert-True -Condition ($packIds.Count -ge 9) -Message "at least 9 packs defined"
 $results += Assert-True -Condition (($packIds | Sort-Object -Unique).Count -eq $packIds.Count) -Message "pack IDs are unique"
 
 foreach ($id in $requiredPackIds) {
@@ -64,6 +68,16 @@ foreach ($pack in $packManifest.packs) {
     $results += Assert-True -Condition ($pack.skill_candidates.Count -gt 0) -Message "pack '$($pack.id)' has skill candidates"
     $results += Assert-True -Condition (($pack.grade_allow | Where-Object { $allowedGrades -notcontains $_ }).Count -eq 0) -Message "pack '$($pack.id)' grade boundaries valid"
     $results += Assert-True -Condition (($pack.task_allow | Where-Object { $allowedTaskTypes -notcontains $_ }).Count -eq 0) -Message "pack '$($pack.id)' task boundaries valid"
+    $results += Assert-True -Condition ($null -ne $pack.defaults_by_task) -Message "pack '$($pack.id)' has defaults_by_task"
+
+    if ($pack.defaults_by_task) {
+        $defaultTaskKeys = @($pack.defaults_by_task.PSObject.Properties.Name)
+        foreach ($taskKey in $defaultTaskKeys) {
+            $results += Assert-True -Condition ($pack.task_allow -contains $taskKey) -Message "pack '$($pack.id)' default task '$taskKey' is task-allowed"
+            $defaultSkill = [string]$pack.defaults_by_task.$taskKey
+            $results += Assert-True -Condition ($pack.skill_candidates -contains $defaultSkill) -Message "pack '$($pack.id)' default skill '$defaultSkill' exists in candidates"
+        }
+    }
 }
 
 $autoRoute = [double]$thresholds.thresholds.auto_route
@@ -72,13 +86,27 @@ $fallbackBelow = [double]$thresholds.thresholds.fallback_to_legacy_below
 
 $results += Assert-True -Condition ($autoRoute -gt $confirmRequired) -Message "auto_route threshold higher than confirm_required"
 $results += Assert-True -Condition ($confirmRequired -ge $fallbackBelow) -Message "confirm_required is not lower than fallback threshold"
+$results += Assert-True -Condition ($thresholds.thresholds.min_top1_top2_gap -ne $null) -Message "min_top1_top2_gap threshold configured"
 $results += Assert-True -Condition ($thresholds.safety.enforce_grade_boundary -eq $true) -Message "grade boundary safety is enabled"
 $results += Assert-True -Condition ($thresholds.safety.enforce_task_boundary -eq $true) -Message "task boundary safety is enabled"
 $results += Assert-True -Condition ($thresholds.weights.skill_keyword_signal -ne $null) -Message "skill_keyword_signal weight is configured"
+$results += Assert-True -Condition ($thresholds.candidate_selection.rule_positive_keyword_bonus -ne $null) -Message "candidate_selection positive bonus configured"
+$results += Assert-True -Condition ($thresholds.candidate_selection.rule_negative_keyword_penalty -ne $null) -Message "candidate_selection negative penalty configured"
+$results += Assert-True -Condition ($thresholds.candidate_selection.canonical_for_task_bonus -ne $null) -Message "candidate_selection canonical bonus configured"
 $results += Assert-True -Condition ($skillKeywordIndex.selection.weights.keyword_match -ne $null) -Message "skill index keyword_match weight is configured"
 $results += Assert-True -Condition ($skillKeywordIndex.selection.weights.name_match -ne $null) -Message "skill index name_match weight is configured"
 $results += Assert-True -Condition ($skillKeywordIndex.selection.fallback_to_first_when_score_below -ne $null) -Message "skill index fallback threshold is configured"
 $results += Assert-True -Condition ((@($skillKeywordIndex.skills.PSObject.Properties).Count -gt 0)) -Message "skill index contains skill mappings"
+$results += Assert-True -Condition ((@($routingRules.skills.PSObject.Properties).Count -gt 0)) -Message "routing rules contain skill mappings"
+
+foreach ($ruleProp in @($routingRules.skills.PSObject.Properties | Select-Object -First 10)) {
+    $rule = $ruleProp.Value
+    $results += Assert-True -Condition ($null -ne $rule.task_allow) -Message "routing rule '$($ruleProp.Name)' has task_allow"
+    $results += Assert-True -Condition ($null -ne $rule.positive_keywords) -Message "routing rule '$($ruleProp.Name)' has positive_keywords"
+    $results += Assert-True -Condition ($null -ne $rule.negative_keywords) -Message "routing rule '$($ruleProp.Name)' has negative_keywords"
+    $results += Assert-True -Condition ($null -ne $rule.equivalent_group -or $rule.equivalent_group -eq $null) -Message "routing rule '$($ruleProp.Name)' has equivalent_group"
+    $results += Assert-True -Condition ($null -ne $rule.canonical_for_task) -Message "routing rule '$($ruleProp.Name)' has canonical_for_task"
+}
 
 $aliasPairs = @($aliasMap.aliases.PSObject.Properties)
 $results += Assert-True -Condition ($null -ne $aliasMap.aliases) -Message "alias mapping container exists"

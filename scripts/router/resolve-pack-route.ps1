@@ -1,4 +1,4 @@
-param(
+﻿param(
     [Parameter(Mandatory = $true)]
     [string]$Prompt,
     [ValidateSet("M", "L", "XL")]
@@ -85,7 +85,7 @@ function Test-KeywordHit {
     return $PromptLower.Contains($needle)
 }
 
-function Get-TriggerKeywordScore {
+function Get-KeywordRatio {
     param(
         [string]$PromptLower,
         [string[]]$Keywords
@@ -98,9 +98,20 @@ function Get-TriggerKeywordScore {
             $matched++
         }
     }
+
+    if ($matched -le 0) { return 0.0 }
     $denominator = [Math]::Min([double]$Keywords.Count, 4.0)
     if ($denominator -le 0) { return 0.0 }
     return [Math]::Min(1.0, ($matched / $denominator))
+}
+
+function Get-TriggerKeywordScore {
+    param(
+        [string]$PromptLower,
+        [string[]]$Keywords
+    )
+
+    return Get-KeywordRatio -PromptLower $PromptLower -Keywords $Keywords
 }
 
 function Get-IntentScore {
@@ -185,20 +196,7 @@ function Get-SkillKeywordScore {
     $entry = $SkillKeywordIndex.skills.$Candidate
     if (-not $entry -or -not $entry.keywords) { return 0.0 }
 
-    $keywords = @($entry.keywords)
-    if ($keywords.Count -eq 0) { return 0.0 }
-
-    $hits = 0
-    foreach ($k in $keywords) {
-        if (Test-KeywordHit -PromptLower $PromptLower -Keyword $k) {
-            $hits++
-        }
-    }
-
-    if ($hits -le 0) { return 0.0 }
-    $denominator = [Math]::Min([double]$keywords.Count, 4.0)
-    if ($denominator -le 0) { return 0.0 }
-    return [Math]::Min(1.0, ($hits / $denominator))
+    return Get-KeywordRatio -PromptLower $PromptLower -Keywords @($entry.keywords)
 }
 
 function Get-PackSkillSignalScore {
@@ -221,12 +219,85 @@ function Get-PackSkillSignalScore {
     return [Math]::Min(1.0, $maxScore)
 }
 
+function Get-RoutingRuleForCandidate {
+    param(
+        [string]$Candidate,
+        [object]$RoutingRules
+    )
+
+    if (-not $RoutingRules -or -not $RoutingRules.skills -or -not $Candidate) {
+        return $null
+    }
+
+    $keys = @($RoutingRules.skills.PSObject.Properties.Name)
+    if ($keys -contains $Candidate) {
+        return $RoutingRules.skills.$Candidate
+    }
+
+    return $null
+}
+
+function Test-RuleTaskAllowed {
+    param(
+        [object]$Rule,
+        [string]$TaskType
+    )
+
+    if (-not $Rule -or -not $Rule.task_allow) { return $true }
+    $allowed = @($Rule.task_allow)
+    if ($allowed.Count -eq 0) { return $true }
+    return ($allowed -contains $TaskType)
+}
+
+function Get-CanonicalForTaskHit {
+    param(
+        [object]$Rule,
+        [string]$TaskType
+    )
+
+    if (-not $Rule -or -not $Rule.canonical_for_task) { return 0.0 }
+    $canonical = @($Rule.canonical_for_task)
+    if ($canonical -contains $TaskType) { return 1.0 }
+    return 0.0
+}
+
+function Get-PackDefaultCandidate {
+    param(
+        [object]$Pack,
+        [string]$TaskType,
+        [string[]]$PreferredCandidates,
+        [string[]]$AllCandidates
+    )
+
+    if (-not $Pack -or -not $Pack.defaults_by_task) { return $null }
+
+    $taskKeys = @($Pack.defaults_by_task.PSObject.Properties.Name)
+    if (-not ($taskKeys -contains $TaskType)) { return $null }
+
+    $defaultSkill = [string]$Pack.defaults_by_task.$TaskType
+    if (-not $defaultSkill) { return $null }
+
+    if ($PreferredCandidates -and ($PreferredCandidates -contains $defaultSkill)) {
+        return $defaultSkill
+    }
+
+    if ($AllCandidates -and ($AllCandidates -contains $defaultSkill)) {
+        return $defaultSkill
+    }
+
+    return $null
+}
+
 function Select-PackCandidate {
     param(
         [string]$PromptLower,
         [string[]]$Candidates,
+        [string]$TaskType,
         [string]$RequestedCanonical,
-        [object]$SkillKeywordIndex
+        [object]$SkillKeywordIndex,
+        [object]$RoutingRules,
+        [object]$Pack,
+        [object]$CandidateSelectionConfig
     )
 
     if (-not $Candidates -or $Candidates.Count -eq 0) {
@@ -235,6 +306,8 @@ function Select-PackCandidate {
             score = 0.0
             reason = "no_candidates"
             ranking = @()
+            top1_top2_gap = 0.0
+            filtered_out_by_task = @()
         }
     }
 
@@ -249,8 +322,13 @@ function Select-PackCandidate {
                     score = 1.0
                     keyword_score = 1.0
                     name_score = 1.0
+                    positive_score = 1.0
+                    negative_score = 0.0
+                    canonical_for_task_hit = 1.0
                 }
             )
+            top1_top2_gap = 1.0
+            filtered_out_by_task = @()
         }
     }
 
@@ -269,18 +347,95 @@ function Select-PackCandidate {
         $fallbackMin = [double]$SkillKeywordIndex.selection.fallback_to_first_when_score_below
     }
 
+    $positiveBonus = 0.2
+    $negativePenalty = 0.25
+    $canonicalBonus = 0.12
+    if ($CandidateSelectionConfig) {
+        if ($CandidateSelectionConfig.rule_positive_keyword_bonus -ne $null) {
+            $positiveBonus = [double]$CandidateSelectionConfig.rule_positive_keyword_bonus
+        }
+        if ($CandidateSelectionConfig.rule_negative_keyword_penalty -ne $null) {
+            $negativePenalty = [double]$CandidateSelectionConfig.rule_negative_keyword_penalty
+        }
+        if ($CandidateSelectionConfig.canonical_for_task_bonus -ne $null) {
+            $canonicalBonus = [double]$CandidateSelectionConfig.canonical_for_task_bonus
+        }
+    }
+
+    $filteredCandidates = @()
+    $blockedByTask = @()
+    foreach ($candidate in $Candidates) {
+        $rule = Get-RoutingRuleForCandidate -Candidate $candidate -RoutingRules $RoutingRules
+        if (Test-RuleTaskAllowed -Rule $rule -TaskType $TaskType) {
+            $filteredCandidates += $candidate
+        } else {
+            $blockedByTask += $candidate
+        }
+    }
+
+    $defaultCandidate = Get-PackDefaultCandidate -Pack $Pack -TaskType $TaskType -PreferredCandidates $filteredCandidates -AllCandidates $Candidates
+
+    if ($filteredCandidates.Count -eq 0) {
+        if ($defaultCandidate) {
+            return [pscustomobject]@{
+                selected = $defaultCandidate
+                score = 0.0
+                reason = "fallback_task_default_after_task_filter"
+                ranking = @()
+                top1_top2_gap = 0.0
+                filtered_out_by_task = @($blockedByTask)
+            }
+        }
+
+        return [pscustomobject]@{
+            selected = $Candidates[0]
+            score = 0.0
+            reason = "fallback_first_candidate_after_task_filter"
+            ranking = @()
+            top1_top2_gap = 0.0
+            filtered_out_by_task = @($blockedByTask)
+        }
+    }
+
     $scored = @()
-    for ($i = 0; $i -lt $Candidates.Count; $i++) {
-        $candidate = [string]$Candidates[$i]
+    for ($i = 0; $i -lt $filteredCandidates.Count; $i++) {
+        $candidate = [string]$filteredCandidates[$i]
+        $rule = Get-RoutingRuleForCandidate -Candidate $candidate -RoutingRules $RoutingRules
+
         $keywordScore = Get-SkillKeywordScore -PromptLower $PromptLower -Candidate $candidate -SkillKeywordIndex $SkillKeywordIndex
         $nameScore = Get-CandidateNameMatchScore -PromptLower $PromptLower -Candidate $candidate
-        $score = ($weightKeyword * $keywordScore) + ($weightName * $nameScore)
+
+        $positiveScore = 0.0
+        $negativeScore = 0.0
+        $equivalentGroup = $null
+        if ($rule) {
+            $positiveScore = Get-KeywordRatio -PromptLower $PromptLower -Keywords @($rule.positive_keywords)
+            $negativeScore = Get-KeywordRatio -PromptLower $PromptLower -Keywords @($rule.negative_keywords)
+            if ($rule.equivalent_group) {
+                $equivalentGroup = [string]$rule.equivalent_group
+            }
+        }
+
+        $canonicalHit = Get-CanonicalForTaskHit -Rule $rule -TaskType $TaskType
+
+        $score =
+            ($weightKeyword * $keywordScore) +
+            ($weightName * $nameScore) +
+            ($positiveBonus * $positiveScore) -
+            ($negativePenalty * $negativeScore) +
+            ($canonicalBonus * $canonicalHit)
+
+        $score = [Math]::Max(0.0, [Math]::Min(1.0, $score))
 
         $scored += [pscustomobject]@{
             skill = $candidate
             score = [Math]::Round($score, 4)
             keyword_score = [Math]::Round($keywordScore, 4)
             name_score = [Math]::Round($nameScore, 4)
+            positive_score = [Math]::Round($positiveScore, 4)
+            negative_score = [Math]::Round($negativeScore, 4)
+            canonical_for_task_hit = [Math]::Round($canonicalHit, 4)
+            equivalent_group = $equivalentGroup
             ordinal = $i
         }
     }
@@ -288,24 +443,49 @@ function Select-PackCandidate {
     $ranked = $scored | Sort-Object -Property @(
         @{ Expression = "score"; Descending = $true },
         @{ Expression = "keyword_score"; Descending = $true },
+        @{ Expression = "positive_score"; Descending = $true },
         @{ Expression = "ordinal"; Descending = $false }
     )
+
     $top = $ranked | Select-Object -First 1
     if (-not $top) {
+        $fallback = if ($defaultCandidate) { $defaultCandidate } else { $filteredCandidates[0] }
+        $fallbackReason = if ($defaultCandidate) { "fallback_task_default" } else { "fallback_first_candidate" }
         return [pscustomobject]@{
-            selected = $Candidates[0]
+            selected = $fallback
             score = 0.0
-            reason = "fallback_first_candidate"
+            reason = $fallbackReason
             ranking = @()
+            top1_top2_gap = 0.0
+            filtered_out_by_task = @($blockedByTask)
         }
     }
 
+    $second = $ranked | Select-Object -Skip 1 -First 1
+    $gap = if ($second) { [double]$top.score - [double]$second.score } else { [double]$top.score }
+    $gap = [Math]::Max(0.0, [Math]::Round($gap, 4))
+
     if ([double]$top.score -lt $fallbackMin) {
+        if ($defaultCandidate) {
+            $defaultInRank = $ranked | Where-Object { $_.skill -eq $defaultCandidate } | Select-Object -First 1
+            $defaultScore = if ($defaultInRank) { [double]$defaultInRank.score } else { [double]$top.score }
+            return [pscustomobject]@{
+                selected = $defaultCandidate
+                score = $defaultScore
+                reason = "fallback_task_default"
+                ranking = @($ranked | Select-Object -First 3)
+                top1_top2_gap = $gap
+                filtered_out_by_task = @($blockedByTask)
+            }
+        }
+
         return [pscustomobject]@{
-            selected = $Candidates[0]
+            selected = $filteredCandidates[0]
             score = [double]$top.score
             reason = "fallback_first_candidate"
             ranking = @($ranked | Select-Object -First 3)
+            top1_top2_gap = $gap
+            filtered_out_by_task = @($blockedByTask)
         }
     }
 
@@ -314,6 +494,8 @@ function Select-PackCandidate {
         score = [double]$top.score
         reason = "keyword_ranked"
         ranking = @($ranked | Select-Object -First 3)
+        top1_top2_gap = $gap
+        filtered_out_by_task = @($blockedByTask)
     }
 }
 
@@ -324,6 +506,7 @@ $packManifestPath = Join-Path $configRoot "pack-manifest.json"
 $aliasMapPath = Join-Path $configRoot "skill-alias-map.json"
 $thresholdPath = Join-Path $configRoot "router-thresholds.json"
 $skillKeywordIndexPath = Join-Path $configRoot "skill-keyword-index.json"
+$routingRulesPath = Join-Path $configRoot "skill-routing-rules.json"
 
 $packManifest = Get-Content -LiteralPath $packManifestPath -Raw -Encoding UTF8 | ConvertFrom-Json
 $aliasMap = Get-Content -LiteralPath $aliasMapPath -Raw -Encoding UTF8 | ConvertFrom-Json
@@ -333,11 +516,19 @@ $skillKeywordIndex = if (Test-Path -LiteralPath $skillKeywordIndexPath) {
 } else {
     $null
 }
+$routingRules = if (Test-Path -LiteralPath $routingRulesPath) {
+    Get-Content -LiteralPath $routingRulesPath -Raw -Encoding UTF8 | ConvertFrom-Json
+} else {
+    $null
+}
 
 $weights = $thresholds.weights
 $rules = $thresholds.safety
 $th = $thresholds.thresholds
 $weightSkillSignal = if ($weights.skill_keyword_signal -ne $null) { [double]$weights.skill_keyword_signal } else { 0.25 }
+$candidateSelectionConfig = if ($thresholds.candidate_selection) { $thresholds.candidate_selection } else { $null }
+$minTopGap = if ($th.min_top1_top2_gap -ne $null) { [double]$th.min_top1_top2_gap } else { 0.0 }
+$minCandidateSignalForConfirmOverride = if ($th.min_candidate_signal_for_confirm_override -ne $null) { [double]$th.min_candidate_signal_for_confirm_override } else { 0.0 }
 
 $aliasResult = Resolve-Alias -Skill $RequestedSkill -AliasMap $aliasMap
 $requestedCanonical = [string]$aliasResult.canonical
@@ -366,7 +557,9 @@ foreach ($pack in $packManifest.packs) {
         ([double]$weights.recent_success_prior * $prior) +
         ([double]$weights.conflict_penalty_inverse * $conflictInverse)
 
-    $selection = Select-PackCandidate -PromptLower $promptLower -Candidates $pack.skill_candidates -RequestedCanonical $requestedCanonical -SkillKeywordIndex $skillKeywordIndex
+    $selection = Select-PackCandidate -PromptLower $promptLower -Candidates $pack.skill_candidates -TaskType $TaskType -RequestedCanonical $requestedCanonical -SkillKeywordIndex $skillKeywordIndex -RoutingRules $routingRules -Pack $pack -CandidateSelectionConfig $candidateSelectionConfig
+    $candidateSignal = ([double]$selection.score * 0.75) + ([double]$selection.top1_top2_gap * 0.25)
+    $candidateSignal = [Math]::Round([Math]::Min(1.0, [Math]::Max(0.0, $candidateSignal)), 4)
 
     $packResults += [pscustomobject]@{
         pack_id = [string]$pack.id
@@ -383,6 +576,9 @@ foreach ($pack in $packManifest.packs) {
         candidate_selection_reason = $selection.reason
         candidate_selection_score = [Math]::Round([double]$selection.score, 4)
         candidate_ranking = @($selection.ranking)
+        candidate_top1_top2_gap = [Math]::Round([double]$selection.top1_top2_gap, 4)
+        candidate_signal = $candidateSignal
+        candidate_filtered_out_by_task = @($selection.filtered_out_by_task)
     }
 }
 
@@ -399,18 +595,51 @@ if ($top -and $requestedCanonical -and ($top.candidates -contains $requestedCano
     $confidence = [Math]::Max($confidence, ([double]$th.confirm_required + 0.05))
 }
 
-$routeMode = if ($confidence -lt [double]$th.fallback_to_legacy_below) { "legacy_fallback" } else { "pack_overlay" }
+$topGap = if ($top) { [double]$top.candidate_top1_top2_gap } else { 0.0 }
+$candidateSignal = if ($top) { [double]$top.candidate_signal } else { 0.0 }
+$canOverrideLegacyFallback = $false
+if ($top -and ($top.candidate_selection_reason -in @("keyword_ranked", "requested_skill")) -and ($candidateSignal -ge $minCandidateSignalForConfirmOverride)) {
+    $canOverrideLegacyFallback = $true
+}
+$routeReason = ""
+if (-not $top) {
+    $routeMode = "legacy_fallback"
+    $routeReason = "no_eligible_pack"
+} elseif ($confidence -lt [double]$th.fallback_to_legacy_below) {
+    if ($canOverrideLegacyFallback) {
+        $routeMode = "confirm_required"
+        $routeReason = "candidate_signal_override"
+        $confidence = [Math]::Max($confidence, [double]$th.confirm_required)
+    } else {
+        $routeMode = "legacy_fallback"
+        $routeReason = "confidence_below_fallback"
+    }
+} elseif ($topGap -lt $minTopGap) {
+    $routeMode = "confirm_required"
+    $routeReason = "top_candidates_too_close"
+} elseif ($confidence -lt [double]$th.auto_route) {
+    $routeMode = "confirm_required"
+    $routeReason = "confidence_requires_confirmation"
+} else {
+    $routeMode = "pack_overlay"
+    $routeReason = "auto_route"
+}
 
 $result = [pscustomobject]@{
     prompt = $Prompt
     grade = $Grade
     task_type = $TaskType
     route_mode = $routeMode
+    route_reason = $routeReason
     confidence = [Math]::Round($confidence, 4)
+    top1_top2_gap = [Math]::Round($topGap, 4)
+    candidate_signal = [Math]::Round($candidateSignal, 4)
     thresholds = [pscustomobject]@{
         auto_route = [double]$th.auto_route
         confirm_required = [double]$th.confirm_required
         fallback_to_legacy_below = [double]$th.fallback_to_legacy_below
+        min_top1_top2_gap = [double]$minTopGap
+        min_candidate_signal_for_confirm_override = [double]$minCandidateSignalForConfirmOverride
     }
     alias = $aliasResult
     selected = if ($top) {
@@ -419,6 +648,9 @@ $result = [pscustomobject]@{
             skill = $top.selected_candidate
             selection_reason = $top.candidate_selection_reason
             selection_score = $top.candidate_selection_score
+            top1_top2_gap = $top.candidate_top1_top2_gap
+            candidate_signal = $top.candidate_signal
+            filtered_out_by_task = @($top.candidate_filtered_out_by_task)
         }
     } else {
         $null
@@ -426,4 +658,4 @@ $result = [pscustomobject]@{
     ranked = @($ranked | Select-Object -First 3)
 }
 
-$result | ConvertTo-Json -Depth 8
+$result | ConvertTo-Json -Depth 10

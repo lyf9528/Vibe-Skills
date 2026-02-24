@@ -135,20 +135,16 @@ if ($InstallExternal) {
     }
   }
 
-  if (Get-Command claude -ErrorAction SilentlyContinue) {
-    try {
-      $manifest = Get-Content -LiteralPath (Join-Path $RepoRoot 'config\plugins-manifest.codex.json') -Raw | ConvertFrom-Json
-      foreach ($plugin in $manifest.core) {
-        try {
-          Invoke-Expression $plugin.install | Out-Null
-          Write-Host "Installed plugin: $($plugin.name)"
-        } catch {
-          Write-Warning "Failed plugin install: $($plugin.name)"
-        }
-      }
-    } catch {
-      Write-Warning "Failed to process plugin manifest"
+  try {
+    $manifest = Get-Content -LiteralPath (Join-Path $RepoRoot 'config\plugins-manifest.codex.json') -Raw | ConvertFrom-Json
+    Write-Host "Codex-only mode: plugin auto-install commands are disabled."
+    foreach ($plugin in $manifest.core) {
+      $mode = if ($plugin.PSObject.Properties.Name -contains 'install_mode') { $plugin.install_mode } else { 'manual-codex' }
+      $hint = if ($plugin.PSObject.Properties.Name -contains 'install_hint') { $plugin.install_hint } else { 'Provision manually in your Codex environment.' }
+      Write-Host ("[MANUAL] {0} ({1}) - {2}" -f $plugin.name, $mode, $hint)
     }
+  } catch {
+    Write-Warning "Failed to process plugin manifest"
   }
 }
 

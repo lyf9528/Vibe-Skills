@@ -1,6 +1,6 @@
 ﻿{
     "version":  1,
-    "updated":  "2026-02-24",
+    "updated":  "2026-02-25",
     "legacy_matrix_fallback":  true,
     "packs":  [
                   {
@@ -63,7 +63,66 @@
                                                "think-harder",
                                                "vibe",
                                                "writing-plans"
-                                           ]
+                                           ],
+                      "defaults_by_task":  {
+                                               "debug":  "think-harder",
+                                               "planning":  "writing-plans",
+                                               "research":  "claude-skills",
+                                               "coding":  "autonomous-builder",
+                                               "review":  "vibe"
+                                           }
+                  },
+                  {
+                      "id":  "aios-core",
+                      "priority":  96,
+                      "grade_allow":  [
+                                          "M",
+                                          "L",
+                                          "XL"
+                                      ],
+                      "task_allow":  [
+                                         "planning",
+                                         "coding",
+                                         "review",
+                                         "debug",
+                                         "research"
+                                     ],
+                      "trigger_keywords":  [
+                                               "aios",
+                                               "aios-core",
+                                               "synkra",
+                                               "agentic agile",
+                                               "prd",
+                                               "user story",
+                                               "scrum master",
+                                               "product owner",
+                                               "quality gate",
+                                               "敏捷智能体",
+                                               "用户故事",
+                                               "产品负责人",
+                                               "质量门禁"
+                                           ],
+                      "skill_candidates":  [
+                                               "aios-analyst",
+                                               "aios-architect",
+                                               "aios-data-engineer",
+                                               "aios-dev",
+                                               "aios-devops",
+                                               "aios-master",
+                                               "aios-pm",
+                                               "aios-po",
+                                               "aios-qa",
+                                               "aios-sm",
+                                               "aios-squad-creator",
+                                               "aios-ux-design-expert"
+                                           ],
+                      "defaults_by_task":  {
+                                               "debug":  "aios-devops",
+                                               "planning":  "aios-pm",
+                                               "research":  "aios-analyst",
+                                               "coding":  "aios-dev",
+                                               "review":  "aios-qa"
+                                           }
                   },
                   {
                       "id":  "code-quality",
@@ -93,7 +152,14 @@
                                                "修复",
                                                "质量",
                                                "安全检查",
-                                               "静态检查"
+                                               "静态检查",
+                                               "review",
+                                               "maintainability",
+                                               "maintainable",
+                                               "bug",
+                                               "bugs",
+                                               "change review",
+                                               "code change"
                                            ],
                       "skill_candidates":  [
                                                "build-error-resolver",
@@ -112,7 +178,12 @@
                                                "tdd-guide",
                                                "verification-before-completion",
                                                "windows-hook-debugging"
-                                           ]
+                                           ],
+                      "defaults_by_task":  {
+                                               "debug":  "systematic-debugging",
+                                               "coding":  "tdd-guide",
+                                               "review":  "code-reviewer"
+                                           }
                   },
                   {
                       "id":  "data-ml",
@@ -177,7 +248,13 @@
                                                "umap-learn",
                                                "matplotlib",
                                                "plotly"
-                                           ]
+                                           ],
+                      "defaults_by_task":  {
+                                               "planning":  "ml-pipeline-workflow",
+                                               "research":  "scikit-learn",
+                                               "coding":  "scikit-learn",
+                                               "review":  "evaluating-machine-learning-models"
+                                           }
                   },
                   {
                       "id":  "bio-science",
@@ -236,7 +313,12 @@
                                                "scanpy",
                                                "scvi-tools",
                                                "string-database"
-                                           ]
+                                           ],
+                      "defaults_by_task":  {
+                                               "planning":  "biopython",
+                                               "coding":  "biopython",
+                                               "research":  "scanpy"
+                                           }
                   },
                   {
                       "id":  "docs-media",
@@ -288,7 +370,12 @@
                                                "transcribe",
                                                "writing-docs",
                                                "xlsx"
-                                           ]
+                                           ],
+                      "defaults_by_task":  {
+                                               "planning":  "docs-write",
+                                               "coding":  "spreadsheet",
+                                               "research":  "content-research-writer"
+                                           }
                   },
                   {
                       "id":  "integration-devops",
@@ -339,7 +426,13 @@
                                                "smart-file-writer",
                                                "vercel-deploy",
                                                "yeet"
-                                           ]
+                                           ],
+                      "defaults_by_task":  {
+                                               "debug":  "gh-fix-ci",
+                                               "planning":  "mcp-integration",
+                                               "coding":  "vercel-deploy",
+                                               "review":  "security-best-practices"
+                                           }
                   },
                   {
                       "id":  "ai-llm",
@@ -373,7 +466,14 @@
                                                "微调",
                                                "responses api",
                                                "openai文档",
-                                               "提示词模板"
+                                               "提示词模板",
+                                               "vector search",
+                                               "semantic retrieval",
+                                               "chunking",
+                                               "embedding策略",
+                                               "分块",
+                                               "向量搜索",
+                                               "embedding pipeline"
                                            ],
                       "skill_candidates":  [
                                                "documentation-lookup",
@@ -387,7 +487,13 @@
                                                "similarity-search-patterns",
                                                "transformer-lens-interpretability",
                                                "transformers"
-                                           ]
+                                           ],
+                      "defaults_by_task":  {
+                                               "planning":  "embedding-strategies",
+                                               "review":  "evaluating-llms-harness",
+                                               "coding":  "documentation-lookup",
+                                               "research":  "openai-docs"
+                                           }
                   },
                   {
                       "id":  "research-design",
@@ -449,7 +555,12 @@
                                                "verification-quality-assurance",
                                                "report-generator",
                                                "structured-content-storage"
-                                           ]
+                                           ],
+                      "defaults_by_task":  {
+                                               "planning":  "designing-experiments",
+                                               "review":  "verification-quality-assurance",
+                                               "research":  "research-lookup"
+                                           }
                   }
               ]
 }

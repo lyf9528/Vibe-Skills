@@ -79,7 +79,7 @@ foreach ($case in $cases) {
 
     $results += Assert-True -Condition ($route.selected.pack_id -eq $case.ExpectedPack) -Message "[$($case.Name)] pack expected=$($case.ExpectedPack), actual=$($route.selected.pack_id)"
     $results += Assert-True -Condition ($route.selected.skill -eq $case.ExpectedSkill) -Message "[$($case.Name)] skill expected=$($case.ExpectedSkill), actual=$($route.selected.skill)"
-    $results += Assert-True -Condition ($route.selected.selection_reason -in @("keyword_ranked", "requested_skill", "fallback_first_candidate")) -Message "[$($case.Name)] selection reason is valid"
+    $results += Assert-True -Condition ($route.selected.selection_reason -in @("keyword_ranked", "requested_skill", "fallback_first_candidate", "fallback_task_default", "fallback_task_default_after_task_filter", "fallback_first_candidate_after_task_filter")) -Message "[$($case.Name)] selection reason is valid"
 }
 
 # Determinism check for per-skill selection.
@@ -105,3 +105,4 @@ if ($failCount -gt 0) {
 
 Write-Host "Skill-index routing audit passed."
 exit 0
+
