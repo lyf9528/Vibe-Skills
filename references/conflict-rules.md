@@ -55,13 +55,14 @@ Each memory system has a specific role. Do not cross boundaries.
 | Memory System | Scope | Use For |
 |--------------|-------|---------|
 | state_store (runtime-neutral) | Session-level (default) | Task state, intermediate results |
-| ruflo memory_store | Current project, session | Vector search, enhanced state (when available) |
-| Serena MCP write_memory | Project knowledge | Architecture decisions, conventions |
-| episodic-memory | Cross-session, long-term | Searching past conversations |
+| Serena MCP write_memory | Project-level | Explicit project decisions, architecture conventions |
+| ruflo memory_store | Session-level | Short-term vector cache, semantic retrieval within current session |
+| Cognee (optional) | Cross-session | Long-term graph memory, entity/relationship retrieval |
+| episodic-memory | Disabled in VCO | Do not route/use in normal VCO flow |
 | Everything-CC instincts | Behavioral patterns | Auto-applying learned patterns |
 
 Key principle: state_store is the DEFAULT, not the fallback.
-ruflo/Serena are ENHANCEMENTS. System runs fully on state_store + conversation context even if all MCP servers are down.
+Serena/ruflo/Cognee are scoped ENHANCEMENTS with non-overlapping responsibilities. System runs fully on state_store + conversation context even if all MCP servers are down.
 
 ## Rule 3: Command Priority
 

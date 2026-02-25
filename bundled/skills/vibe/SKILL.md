@@ -155,6 +155,7 @@ Read the relevant protocol from `protocols/` before executing:
 - Review/Quality → protocols/review.md
 
 L grade always follows: design → plan → user approval → subagent execution → two-stage review.
+When `config/gsd-overlay.json` is enabled and task is planning, apply think.md GSD-Lite preflight hook (post-route only).
 
 ### XL Grade: Read protocols/team.md
 
@@ -163,15 +164,18 @@ Full Codex native team orchestration + ruflo collaboration. See protocols/team.m
 - Team templates (references/team-templates.md)
 - Staged confirmation points
 - Degraded path when ruflo is unavailable (native orchestration only)
+- Optional GSD-Lite wave contract hook for planning/coding dependency waves (`config/gsd-overlay.json`)
 
 ## 4. Memory Rules (Inline)
 
-1. **state_store (runtime-neutral)** = default state storage (always available, zero dependency)
-2. **ruflo memory** = optional enhancement — vector search for intermediate results (when MCP available)
-3. **Serena memory** = project knowledge persistence — architecture decisions, conventions (when MCP available)
-4. **Everything-CC instincts** = behavioral patterns — auto-run, no manual action needed
+1. **state_store (runtime-neutral)** = session state only (default, always available)
+2. **Serena memory** = explicit project decisions only (architecture decisions, conventions)
+3. **ruflo memory** = short-term session vector cache only (optional MCP enhancement)
+4. **Cognee memory** = long-term graph memory and relationship retrieval only (optional)
+5. **episodic-memory** = disabled in VCO governance (do not route/use in normal flow)
+6. **Everything-CC instincts** = behavioral patterns (out-of-band, auto-run)
 
-Key principle: state_store is the DEFAULT. ruflo/Serena are ENHANCEMENTS. System runs fully on state_store + conversation context even if all MCP servers are down.
+Key principle: state_store is the DEFAULT. Serena/ruflo/Cognee are scoped enhancements with non-overlapping roles. System runs fully on state_store + conversation context even if all MCP servers are down.
 
 ## 5. Core Quality Gates (Inline)
 
@@ -187,7 +191,7 @@ Enhanced tier (XL): see protocols/team.md.
 3 rules. Full specification: references/conflict-rules.md
 
 **Rule 1 — Agent Boundary**: M=single-agent tools (no subagent spawning; individual skill commands permitted), L=Superpowers subagent, XL=Codex native team (`spawn_agent` family) + optional ruflo collaboration. One system per task.
-**Rule 2 — Memory Division**: state_store=state, ruflo=vectors, Serena=project, instincts=behavior.
+**Rule 2 — Memory Division**: state_store=session, Serena=explicit decisions, ruflo=short-term vectors, Cognee=long-term graph, episodic-memory=disabled, instincts=behavior.
 **Rule 3 — Command Priority**: User explicit command > VCO routing > plugin defaults.
 
 ## 7. Tool Detection (Lazy)
@@ -229,6 +233,7 @@ Detect availability AFTER routing selects a tool, BEFORE invoking:
 | extending-vco.md | Guide for adding/updating tools |
 | docs/context-retro-advisor-design.md | Context Retro Advisor design and rollout guide |
 | docs/gsd-vco-overlay-integration.md | GSD-Lite overlay integration (post-route planning hook) |
+| docs/memory-governance-integration.md | Memory governance integration (role boundaries + disabled episodic-memory) |
 | docs/prompt-overlay-integration.md | prompts.chat prompt-asset overlay integration (post-route ambiguity guard) |
 | docs/skills-consolidation-roadmap.md | Pack consolidation phases and gates |
 | changelog.md | Version history |
@@ -253,8 +258,8 @@ Detect availability AFTER routing selects a tool, BEFORE invoking:
 
 ## Maintenance
 
-- Version: 2.3.0
-- Updated: 2026-02-24
+- Version: 2.3.5
+- Updated: 2026-02-25
 - Sources: Source code analysis of 6 plugins (2026-02-18) + Agent-Skills-for-Context-Engineering (2026-02-24)
 - Changelog: references/changelog.md
 - Known limits:

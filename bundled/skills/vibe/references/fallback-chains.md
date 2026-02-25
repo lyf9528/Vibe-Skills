@@ -9,7 +9,7 @@ All fallback targets are existing tools from the 6 integrated plugins.
 - XL grade: 3-level fallback (Primary -> Degraded XL -> L-grade sequential -> Direct reasoning)
 
 Fallback triggers:
-- MCP server not running (ruflo, Serena, episodic-memory)
+- MCP server not running (ruflo, Serena, Cognee)
 - Agent timeout or error
 - Tool produces no useful output
 - Plugin not installed
@@ -135,10 +135,11 @@ Notes:
 
 | System | Primary | Fallback |
 |--------|---------|----------|
-| Session state | ruflo memory_store | state_store + conversation context |
-| Cross-session | episodic-memory:search | Serena MCP read_memory |
-| Pattern learning | continuous-learning-v2 | episodic-memory (manual notes) |
-| Project knowledge | Serena MCP write_memory | ruflo memory_store with "project" tag |
+| Session state | state_store | conversation context |
+| Explicit project decisions | Serena MCP write_memory | state_store decision log |
+| Short-term semantic cache | ruflo memory_store | state_store keyed snapshots |
+| Long-term graph retrieval | Cognee graph retrieval (optional) | Serena indexed summaries |
+| episodic-memory | disabled | use Cognee/Serena by role boundary |
 
 ## Retro Context Expert Fallback
 
@@ -196,5 +197,5 @@ Resolution order for build-specific debugging:
 1. L+ 任务开始前，评估任务复杂度与当前对话长度
 2. L 任务中对话明显变长时：考虑 strategic-compact
 3. XL 任务中多 agent 返回大量结果时：保存状态后 compact
-4. 收到 compaction 提示时：立即保存关键决策到 state_store/ruflo
+4. 收到 compaction 提示时：立即保存关键决策到 state_store（必要时写入 Serena）
 5. Always store key decisions BEFORE compaction

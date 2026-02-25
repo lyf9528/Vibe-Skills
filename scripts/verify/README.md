@@ -16,6 +16,7 @@ This directory stores optional verification scripts for CI and local smoke check
 - `vibe-openspec-governance-gate.ps1`: validates zero-conflict OpenSpec governance integration (routing unchanged + grade-based OpenSpec advice + M-lite governance script behavior).
 - `vibe-gsd-overlay-gate.ps1`: validates GSD-Lite overlay trigger semantics through unified VCO route output (scope gating + mode enforcement + routing invariance).
 - `vibe-prompt-overlay-gate.ps1`: validates prompts.chat-oriented prompt overlay semantics (prompt/doc ambiguity detection + confirm_required override + routing invariance outside collision cases).
+- `vibe-memory-governance-gate.ps1`: validates memory governance advice semantics (state_store/Serena/ruflo/Cognee boundaries + episodic-memory disabled) and route invariance across rollout stages.
 
 Related rollout utility:
 
@@ -69,6 +70,12 @@ Run Prompt overlay trigger gate:
 
 ```powershell
 & ".\vibe-prompt-overlay-gate.ps1"
+```
+
+Run Memory governance trigger gate:
+
+```powershell
+& ".\vibe-memory-governance-gate.ps1"
 ```
 
 Compare two CER reports and emit delta artifacts:

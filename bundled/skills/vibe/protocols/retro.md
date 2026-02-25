@@ -51,9 +51,10 @@ Each phase uses existing tools from the integrated plugins.
 ## Phase 1: GATHER (Data Collection)
 
 ### 1.1 Conversation History Retrieval
-Tool: episodic-memory:search
-- Search recent conversations related to target project/topic
-- Mode: semantic (topic-based) or text (specific errors/files)
+Tool: Cognee graph retrieval (optional) + session file scan
+- Query long-term relationship graph for target project/topic context (if Cognee available)
+- Read recent session files for short-horizon execution trace
+- Fallback: session files only (do not use episodic-memory in VCO governance mode)
 
 ### 1.2 Session Activity Review
 Tool: Read ~/.claude/sessions/ files
@@ -73,9 +74,9 @@ Tool: Serena MCP list_memories + read_memory
 - Fallback: Skip if Serena not available
 
 ### 1.5 Error Log Collection
-Tool: git log + episodic-memory search
+Tool: git log + session/ruflo trace synthesis
 - git log --oneline -20 (recent commits, especially fix/revert)
-- Search episodic-memory for error, fix, bug, revert
+- Search session traces/ruflo memory for error, fix, bug, revert
 
 ### 1.6 Context Signal Collection
 Tool: session/tool trace synthesis
@@ -115,12 +116,12 @@ Fallback: claude-code-settings:think-harder
 
 ### 2.2 Problem Pattern Detection
 Tool: hookify:conversation-analyzer agent
-Fallback: Manual scan of episodic-memory search results
+Fallback: Manual scan of session traces and commit history
 - Scan for user frustration signals, repeated errors, tool misuse
 - Severity categorization (high/medium/low)
 
 ### 2.3 Workflow Frequency Analysis
-Tool: Analyze session files + episodic-memory search
+Tool: Analyze session files + ruflo short-term memory
 - Most frequently used tool combinations
 - Repeated multi-step workflows (automation candidates)
 
@@ -187,7 +188,7 @@ Map each failure class to interventions:
 | Behavioral pattern | Create/update instinct | continuous-learning-v2 |
 | Context quality | Update retro policy/playbook | Edit protocols/retro.md + docs |
 | Routing improvement | Update VCO config | Edit SKILL.md / config/*.json |
-| Knowledge capture | Persist memory | Serena write_memory / episodic-memory |
+| Knowledge capture | Persist memory | Serena write_memory + Cognee ingest (optional) |
 | Complex automation | Create agent | Manual design + writing-skills |
 
 ### User Confirmation Gate
@@ -217,7 +218,9 @@ Tool: everything-claude-code:continuous-learning-v2
 Tool: Direct file edits to SKILL.md, conflict-rules.md, fallback-chains.md, router config
 
 ### 5.5 Persist Knowledge
-Tool: Serena write_memory + CLAUDE.md updates if globally applicable
+Tool: Serena write_memory + Cognee ingest (optional) + CLAUDE.md updates if globally applicable
+- Serena: persist explicit project decisions only
+- Cognee: persist long-term entities/relations for cross-session retrieval
 
 ### 5.6 Generate CER Report (Markdown + JSON)
 Generate both artifacts from templates:
@@ -274,15 +277,15 @@ No recommendation should be emitted without Evidence.
 
 | Phase | Primary Tool | Source Plugin | Fallback |
 |-------|-------------|--------------|----------|
-| 1.1 History | episodic-memory:search | Superpowers | Read session files |
+| 1.1 History | Cognee graph retrieval + session files | Cognee + runtime | Read session files |
 | 1.2 Activity | Read ~/.claude/sessions/ | Everything-CC | git log |
 | 1.3 Instincts | instinct-status | Everything-CC | Skip |
 | 1.4 Memory | Serena list/read_memory | Serena MCP | Skip |
-| 1.5 Errors | git log + episodic search | Git + Superpowers | Manual review |
+| 1.5 Errors | git log + session/ruflo trace search | Git + ruflo | Manual review |
 | 1.6 Context signals | session/tool trace synthesis | Runtime-neutral | Manual synthesis |
 | 2.1 Reflection | reflection-harder | Claude-code-settings | deep-reflector agent / think-harder |
 | 2.2 Problems | conversation-analyzer | Hookify | Manual scan |
-| 2.3 Workflows | Session file analysis | Everything-CC | episodic search |
+| 2.3 Workflows | Session file + ruflo analysis | Everything-CC + ruflo | session-only analysis |
 | 2.4 Trends | think-ultra / think-harder | Claude-code-settings | Direct reasoning |
 | 2.5 Context typing | Agent-Skills context guidance | Agent-Skills | VCO heuristics |
 | 3.x Discussion | brainstorming methodology | Superpowers | Direct dialogue |
@@ -291,7 +294,7 @@ No recommendation should be emitted without Evidence.
 | 5.2 Skills | writing-skills | Superpowers | Manual creation |
 | 5.3 Instincts | continuous-learning-v2 | Everything-CC | Manual creation |
 | 5.4 Config | Direct edit | VCO | Manual edit |
-| 5.5 Knowledge | Serena write_memory | Serena MCP | episodic-memory |
+| 5.5 Knowledge | Serena write_memory + Cognee ingest | Serena MCP + Cognee | state_store decision log |
 | 5.6 CER output | CER templates | VCO templates | manual structure |
 | 5.9 Regression check | vibe-retro-context-regression-matrix.ps1 | VCO verify | manual checklist |
 | 5.10 CER compare | cer-compare.ps1 | VCO verify | manual comparison |

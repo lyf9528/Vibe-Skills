@@ -1,5 +1,30 @@
 # VCO Changelog
 
+## v2.3.5 (2026-02-25)
+
+- 新增 Memory Governance 增强层（post-route advice only，不替代 Pack 路由）：
+  - 新增配置（main + bundled）：
+    - `config/memory-governance.json`
+    - `bundled/skills/vibe/config/memory-governance.json`
+  - 路由器输出新增：
+    - `memory_governance_advice`
+  - 语义边界（影子模式默认）：
+    - `state_store` 仅会话状态
+    - `Serena` 仅显式项目决策
+    - `ruflo` 仅短期会话向量缓存
+    - `Cognee` 仅长期图记忆与关系检索
+    - `episodic-memory` 在 VCO 治理路径中禁用
+- 回退链与规则同步：
+  - `references/conflict-rules.md`、`references/fallback-chains.md`、`references/tool-registry.md`
+  - `protocols/retro.md` 移除 episodic-memory 活跃依赖，改为 Serena/ruflo/Cognee 分工
+- 新增门禁与一致性检查：
+  - 新增 `scripts/verify/vibe-memory-governance-gate.ps1`
+  - `scripts/verify/vibe-config-parity-gate.ps1` 纳入 `memory-governance` main/bundled parity
+  - `scripts/verify/README.md` 增加执行入口
+- 新增设计文档：
+  - `docs/memory-governance-integration.md`（main + bundled）
+- `SKILL.md` 更新内联 Memory Rules 与 Rule 2 摘要，统一到五层边界模型。
+
 ## v2.3.4 (2026-02-25)
 
 - 新增 prompts.chat Prompt 资产增强层（post-route overlay，不替代 Pack 路由）：  
@@ -19,9 +44,91 @@
 - 门禁与可观测性增强：
   - 新增 `scripts/verify/vibe-prompt-overlay-gate.ps1`
   - `scripts/verify/vibe-config-parity-gate.ps1` 纳入 `prompt-overlay` main/bundled 一致性检查
+  - `scripts/verify/README.md` 更新执行入口
 - 文档更新：
   - 新增 `docs/prompt-overlay-integration.md`（main + bundled）
-  - 更新 `SKILL.md`、`references/index.md`
+  - 更新 `README.md`、`SKILL.md`、`references/index.md`
+  - `THIRD_PARTY_LICENSES.md`、`config/upstream-lock.json` 增加 `f/prompts.chat` 集成边界说明
+
+## v2.3.3 (2026-02-25)
+
+- 新增 GSD-Lite Overlay（post-route protocol hooks，不引入第二编排器）：
+  - 新增配置（main + bundled）：
+    - `config/gsd-overlay.json`
+    - `bundled/skills/vibe/config/gsd-overlay.json`
+  - 新增 rollout 切换脚本：
+    - `scripts/governance/set-gsd-overlay-rollout.ps1`
+    - 支持 `off|shadow|soft-lxl-planning|strict-lxl-planning`
+- 协议层增强（不修改核心路由）：
+  - `protocols/think.md` 新增 `B5: GSD-Lite Preflight Hook`
+    - brownfield context snapshot
+    - assumption preflight + mode-aware confirm
+  - `protocols/team.md` 新增 `GSD-Lite Wave Contract Hook`
+    - XL planning/coding 的 wave metadata 契约
+- 回退链增强：
+  - `references/fallback-chains.md` 新增 GSD-Lite overlay fallback 规则
+  - 保证 hook 失败时回到既有 VCO 主链，不改变 selected grade/task/pack
+- 验证门禁扩展：
+  - `scripts/verify/vibe-config-parity-gate.ps1` 纳入 `gsd-overlay` main/bundled 一致性校验
+  - `scripts/verify/vibe-gsd-overlay-gate.ps1` 新增统一入口触发语义门禁（scope + mode + enforcement）
+- 路由可观测性增强（不改变路由决策）：
+  - `scripts/router/resolve-pack-route.ps1` 输出新增 `gsd_overlay_advice`
+- 文档更新：
+  - 新增 `docs/gsd-vco-overlay-integration.md`
+  - 更新 `references/index.md`、`README.md`、`scripts/verify/README.md` 对应入口
+
+## v2.3.2 (2026-02-25)
+
+- 接入 `open-ralph-wiggum` 作为 `ralph-loop` 的可选后端（不替代 VCO 路由层）：
+  - `bundled/skills/ralph-loop/scripts/ralph-loop.ps1` 新增双引擎：
+    - `compat`（默认，保留原行为）
+    - `open`（`--engine open`，委托外部 `ralph` CLI）
+  - open 引擎默认安全参数：
+    - 未显式指定 `--agent` 时自动补 `--agent codex`
+    - 默认注入 `--no-commit`（可用 `--open-allow-commit` 关闭）
+  - open 引擎与 compat-only 参数做显式边界保护：
+    - `--next` / `--force` / `--state-file` / `--stop` 在 open 模式下拒绝
+- 安装与依赖登记：
+  - `config/upstream-lock.json` 新增 `Th0rgal/open-ralph-wiggum`（optional-external-cli）
+  - `config/plugins-manifest.codex.json` 新增可选 scripted 安装项 `@th0rgal/ralph-wiggum`
+  - `install.ps1` / `install.sh` 在 `-InstallExternal` 时安装 `@th0rgal/ralph-wiggum`
+- 协议与文档更新：
+  - `protocols/team.md`：Option C 增补 dual-engine 使用边界
+  - `references/fallback-chains.md`：新增 Ralph 引擎回退链（open -> compat -> manual）
+  - `references/tool-registry.md`：补充 open backend 与职责边界
+  - `README.md`：新增 Ralph 双引擎接入与使用说明
+
+## v2.3.1 (2026-02-25)
+
+- 完成 OpenSpec 治理层零冲突接入（post-route governance overlay）：
+  - 路由器追加 `openspec_advice` 元数据，不改变 `selected pack/skill`
+  - `scripts/router/resolve-pack-route.ps1` 增加 OpenSpec policy 读取与治理建议输出
+  - 新增主/镜像策略文件：
+    - `config/openspec-policy.json`
+    - `bundled/skills/vibe/config/openspec-policy.json`
+- 新增治理与切换脚本：
+  - `scripts/governance/invoke-openspec-governance.ps1`
+  - `scripts/governance/set-openspec-rollout.ps1`
+  - `scripts/governance/publish-openspec-soft-rollout.ps1`（单命令发布）
+- 新增治理门禁脚本：
+  - `scripts/verify/vibe-openspec-governance-gate.ps1`
+- OpenSpec 渐进发布语义收敛：
+  - 默认 `soft-lxl-planning`（`L/XL + planning => confirm_required`）
+  - 发布流程改为 `precheck -> switch -> postcheck`
+  - 默认不自动回退；仅在显式 `-EnableEmergencyRollbackOnFailure` 时执行应急回退
+  - 即使应急回退执行，发布脚本仍以失败退出码返回，避免掩盖问题
+- 文档更新：
+  - `README.md`
+  - `docs/openspec-vco-integration.md`
+  - `scripts/verify/README.md`
+- 验证结果（本地）：
+  - `vibe-pack-regression-matrix.ps1`：`54/54`
+  - `vibe-routing-stability-gate.ps1 -Strict`：`PASS`
+    - `route_stability=1.0000`
+    - `top1_top2_gap=0.3572`
+    - `fallback_rate=0.1500`
+    - `misroute_rate=0.0750`
+  - `vibe-openspec-governance-gate.ps1`：`42/42`
 
 ## v2.2.11 (2026-02-24)
 

@@ -14,6 +14,7 @@ Complete reference of VCO execution tools, their capabilities, APIs, state paths
 | 6 | Claude-flow/ruflo (collaboration backend) | MCP Server | PreToolUse, PostToolUse, PreCompact, Stop | .claude-flow/ | ⚠️ MCP依赖 |
 | 7 | Codex native team runtime | Native runtime APIs | None | Session runtime | ✅ |
 | 8 | Open Ralph Wiggum CLI (optional) | External CLI | None | .ralph/ | ⚠️ Optional |
+| 9 | Cognee (optional long-term memory) | External graph memory backend | None | External/adapter-managed | ⚠️ Optional |
 
 ## Verification Status Legend
 
@@ -47,11 +48,12 @@ Complete reference of VCO execution tools, their capabilities, APIs, state paths
 - Stateless: no global state, all context in conversation
 - Skill shadowing: personal skills override superpowers skills
 
-### Sub-plugin: episodic-memory
-- MCP server with `search` and `read` tools
+### Sub-plugin: episodic-memory (disabled in VCO governance)
+- Component availability: MCP server with `search` and `read` tools
 - Backend: SQLite + sqlite-vec (384-dim vectors)
 - Storage: ~/.claude/episodic-memory/
 - Tool names: `episodic-memory:search`, `episodic-memory:read`
+- VCO policy: disabled by `config/memory-governance.json`; do not route/use in normal flow
 
 ---
 
@@ -252,3 +254,22 @@ Characteristics:
 - Invoked only through local `ralph-loop` wrapper with `--engine open`
 - Must not run concurrently with active XL team orchestration
 - Recommended to use no-commit mode during loop and complete VCO quality gates before manual commit
+
+---
+
+## 9. Cognee (Optional Long-Term Graph Memory)
+
+**Purpose**: long-term graph memory and relationship retrieval
+**Status in VCO**: optional backend, activated only under memory governance policy
+
+### VCO Memory Governance Boundary
+- `state_store`: session state only
+- `Serena`: explicit project decisions only
+- `ruflo`: short-term session vector cache only
+- `Cognee`: long-term graph memory + relationship retrieval only
+- `episodic-memory`: disabled in VCO governance path
+
+### Integration Notes
+- VCO route selection remains unchanged; memory governance is post-route advice only.
+- If Cognee is unavailable, fall back to Serena summaries for long-term retrieval.
+- Never use Cognee to replace state_store session state tracking.

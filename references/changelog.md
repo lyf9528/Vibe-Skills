@@ -1,5 +1,30 @@
 # VCO Changelog
 
+## v2.3.5 (2026-02-25)
+
+- 新增 Memory Governance 增强层（post-route advice only，不替代 Pack 路由）：
+  - 新增配置（main + bundled）：
+    - `config/memory-governance.json`
+    - `bundled/skills/vibe/config/memory-governance.json`
+  - 路由器输出新增：
+    - `memory_governance_advice`
+  - 语义边界（影子模式默认）：
+    - `state_store` 仅会话状态
+    - `Serena` 仅显式项目决策
+    - `ruflo` 仅短期会话向量缓存
+    - `Cognee` 仅长期图记忆与关系检索
+    - `episodic-memory` 在 VCO 治理路径中禁用
+- 回退链与规则同步：
+  - `references/conflict-rules.md`、`references/fallback-chains.md`、`references/tool-registry.md`
+  - `protocols/retro.md` 移除 episodic-memory 活跃依赖，改为 Serena/ruflo/Cognee 分工
+- 新增门禁与一致性检查：
+  - 新增 `scripts/verify/vibe-memory-governance-gate.ps1`
+  - `scripts/verify/vibe-config-parity-gate.ps1` 纳入 `memory-governance` main/bundled parity
+  - `scripts/verify/README.md` 增加执行入口
+- 新增设计文档：
+  - `docs/memory-governance-integration.md`（main + bundled）
+- `SKILL.md` 更新内联 Memory Rules 与 Rule 2 摘要，统一到五层边界模型。
+
 ## v2.3.4 (2026-02-25)
 
 - 新增 prompts.chat Prompt 资产增强层（post-route overlay，不替代 Pack 路由）：  

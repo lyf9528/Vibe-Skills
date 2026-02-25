@@ -74,6 +74,23 @@ prompts.chat 仅作为 Prompt 资产层接入，不引入第二路由器：
 - 配置文件：`config/prompt-overlay.json`
 - 设计说明：`docs/prompt-overlay-integration.md`
 
+### 7. Memory Governance 增强层（零冲突接入）
+
+Memory governance 以“后置建议层”接入，不改变现有 Pack 路由决策：
+
+- 覆盖范围：`M/L/XL + planning/coding/review/debug/research`（可配置）
+- 接入方式：`resolve-pack-route.ps1` 输出 `memory_governance_advice`
+- 路由边界：不替换 Pack 选择，不引入第二控制面
+- 配置文件：`config/memory-governance.json`
+- 设计说明：`docs/memory-governance-integration.md`
+
+核心边界：
+- `state_store` 只做会话状态
+- `Serena` 只做显式项目决策
+- `ruflo` 只做短期会话向量缓存
+- `Cognee` 只做长期图记忆与关系检索
+- `episodic-memory` 在 VCO 治理路径中停用
+
 ## 当前路由能力（Strict-Ready）
 
 本版本已经包含稳定性收敛与规则化路由增强：
@@ -103,6 +120,7 @@ prompts.chat 仅作为 Prompt 资产层接入，不引入第二路由器：
 | `config/openspec-policy.json` | OpenSpec 治理策略（mode/profile/升级触发） |
 | `config/gsd-overlay.json` | GSD-Lite 规划增强策略（post-route hook） |
 | `config/prompt-overlay.json` | prompts.chat Prompt 资产增强策略（post-route ambiguity guard） |
+| `config/memory-governance.json` | Memory governance 策略（角色边界 + disabled memory） |
 | `scripts/router/resolve-pack-route.ps1` | 路由核心执行器 |
 | `scripts/governance/invoke-openspec-governance.ps1` | OpenSpec 后置治理执行器（零冲突） |
 | `scripts/governance/set-openspec-rollout.ps1` | OpenSpec 模式渐进切换（off/shadow/soft/strict） |
@@ -113,6 +131,7 @@ prompts.chat 仅作为 Prompt 资产层接入，不引入第二路由器：
 | `docs/openspec-vco-integration.md` | OpenSpec 与 VCO 的分层集成说明 |
 | `docs/gsd-vco-overlay-integration.md` | GSD-Lite 与 VCO 的非冗余接入说明 |
 | `docs/prompt-overlay-integration.md` | prompts.chat 与 VCO 的非冗余接入说明 |
+| `docs/memory-governance-integration.md` | Memory governance 与 VCO 的非冲突接入说明 |
 | `bundled/skills/vibe/config/*` | 与主配置镜像同步的 bundled 配置 |
 
 ## 搭建与安装流程
@@ -158,6 +177,7 @@ pwsh -File .\scripts\verify\vibe-routing-stability-gate.ps1 -Strict
 pwsh -File .\scripts\verify\vibe-openspec-governance-gate.ps1
 pwsh -File .\scripts\verify\vibe-gsd-overlay-gate.ps1
 pwsh -File .\scripts\verify\vibe-prompt-overlay-gate.ps1
+pwsh -File .\scripts\verify\vibe-memory-governance-gate.ps1
 ```
 
 ### 2. OpenSpec 软发布（先验后切，默认不回退）
@@ -292,6 +312,7 @@ powershell -ExecutionPolicy Bypass -File "$env:USERPROFILE\\.codex\\skills\\ralp
 - 完成 OpenSpec 治理层零冲突接入（后置治理，不参与 Pack 打分，不改 selected pack/skill）。
 - 完成 GSD-Lite 规划增强层接入（协议钩子模式，不引入第二编排器/第二命令面）。
 - 完成 prompts.chat Prompt 资产增强层接入（post-route advice，不替换 Pack 选择，仅处理 prompt/doc 冲突确认）。
+- 完成 Memory Governance 增强层接入（post-route advice，不替换 Pack 选择，明确五层记忆边界并停用 episodic-memory）。
 - 新增 OpenSpec 单命令 soft 发布脚本（`publish-openspec-soft-rollout.ps1`）：
   - 固定流程：`precheck -> switch -> postcheck`
   - 默认不自动回退，失败保持可见
