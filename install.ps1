@@ -46,6 +46,14 @@ foreach ($p in $paths) {
 
 Copy-DirContent -Source (Join-Path $RepoRoot 'bundled\skills') -Destination (Join-Path $TargetRoot 'skills')
 
+# Ensure unified /vibe entry uses the latest router implementation after install.
+$vibeRouterSource = Join-Path $RepoRoot 'scripts\router\resolve-pack-route.ps1'
+$vibeRouterTarget = Join-Path $TargetRoot 'skills\vibe\scripts\router\resolve-pack-route.ps1'
+if (Test-Path -LiteralPath $vibeRouterSource) {
+  New-Item -ItemType Directory -Force -Path (Split-Path -Parent $vibeRouterTarget) | Out-Null
+  Copy-Item -LiteralPath $vibeRouterSource -Destination $vibeRouterTarget -Force
+}
+
 $requiredCore = @('dialectic', 'local-vco-roles', 'spec-kit-vibe-compat', 'superclaude-framework-compat', 'ralph-loop', 'cancel-ralph', 'tdd-guide', 'think-harder')
 foreach ($name in $requiredCore) {
   $canonicalSrc = Join-Path $canonicalSkillsRoot $name

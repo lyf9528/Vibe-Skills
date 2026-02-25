@@ -1,5 +1,16 @@
 # VCO Changelog
 
+## v2.3.6 (2026-02-25)
+
+- 修复统一 `/vibe` 入口安装漂移问题（关键修复）：
+  - `install.ps1` 与 `install.sh` 现在会强制同步：
+    - `skills/vibe/scripts/router/resolve-pack-route.ps1`
+  - 避免“文档/配置已升级但本地路由脚本仍旧版”导致的新功能不触发。
+- 健康检查增强：
+  - `check.ps1`、`check.sh` 新增检查项：
+    - `skills/vibe/scripts/router/resolve-pack-route.ps1`
+    - `skills/vibe/config/memory-governance.json`
+
 ## v2.3.5 (2026-02-25)
 
 - 新增 Memory Governance 增强层（post-route advice only，不替代 Pack 路由）：

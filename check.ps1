@@ -37,6 +37,9 @@ foreach ($name in $requiredSkills) {
   Check-Path -Label "skill/$name" -Path (Join-Path $TargetRoot "skills\$name\SKILL.md")
 }
 
+Check-Path -Label "vibe router script" -Path (Join-Path $TargetRoot "skills\vibe\scripts\router\resolve-pack-route.ps1")
+Check-Path -Label "vibe memory governance config" -Path (Join-Path $TargetRoot "skills\vibe\config\memory-governance.json")
+
 foreach ($name in $requiredWorkflow) {
   Check-Path -Label "workflow skill/$name" -Path (Join-Path $TargetRoot "skills\$name\SKILL.md")
 }

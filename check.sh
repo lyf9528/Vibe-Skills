@@ -34,6 +34,8 @@ check_path "settings.json" "${TARGET_ROOT}/settings.json"
 for n in vibe dialectic local-vco-roles spec-kit-vibe-compat superclaude-framework-compat ralph-loop cancel-ralph tdd-guide think-harder; do
   check_path "skill/${n}" "${TARGET_ROOT}/skills/${n}/SKILL.md"
 done
+check_path "vibe router script" "${TARGET_ROOT}/skills/vibe/scripts/router/resolve-pack-route.ps1"
+check_path "vibe memory governance config" "${TARGET_ROOT}/skills/vibe/config/memory-governance.json"
 for n in brainstorming writing-plans subagent-driven-development systematic-debugging; do
   check_path "workflow/${n}" "${TARGET_ROOT}/skills/${n}/SKILL.md"
 done
