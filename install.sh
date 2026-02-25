@@ -94,6 +94,10 @@ if [[ "${INSTALL_EXTERNAL}" == "true" ]]; then
       echo "[WARN] xan CLI not detected. Install manually (brew/pixi/conda/cargo) to enable large CSV acceleration."
     fi
   fi
+
+  if ! command -v fuck-u-code >/dev/null 2>&1; then
+    echo "[WARN] fuck-u-code CLI not detected. Install manually if you want external quality-debt analyzer hints (quality-debt-overlay still works without it)."
+  fi
 fi
 
 echo "Install done. Run: bash check.sh --profile ${PROFILE} --target-root ${TARGET_ROOT}"

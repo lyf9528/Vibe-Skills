@@ -1,5 +1,27 @@
 # VCO Changelog
 
+## v2.3.8 (2026-02-25)
+
+- 新增 Quality Debt Overlay（fuck-u-code 增强，post-route advice-only，不替代 Pack 路由）：
+  - 新增配置（main + bundled）：
+    - `config/quality-debt-overlay.json`
+    - `bundled/skills/vibe/config/quality-debt-overlay.json`
+  - 路由器输出新增：
+    - `quality_debt_advice`
+  - 语义行为：
+    - `shadow`：仅建议，不改 selected pack/skill
+    - `soft`：高风险仅给出 `confirm_recommended` 建议
+    - `strict`：高风险输出 `confirm_required` advice（仍不改路由分配）
+- 新增验证门禁：
+  - `scripts/verify/vibe-quality-debt-overlay-gate.ps1`
+  - `scripts/verify/vibe-config-parity-gate.ps1` 纳入 `quality-debt-overlay` main/bundled parity
+- 健康检查增强：
+  - `check.ps1`、`check.sh` 新增 `quality-debt-overlay` 配置存在性检查
+- 新增设计文档：
+  - `docs/quality-debt-overlay-integration.md`（main + bundled）
+- 文档同步：
+  - `README.md`、`SKILL.md`、`references/index.md`、`references/tool-registry.md` 更新 quality-debt overlay 说明
+
 ## v2.3.7 (2026-02-25)
 
 - 新增 Data Scale Overlay（基于真实文件信号的表格技能选择增强，post-route，不替代 Pack 路由）：

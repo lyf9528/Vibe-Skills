@@ -16,6 +16,7 @@ Complete reference of VCO execution tools, their capabilities, APIs, state paths
 | 8 | Open Ralph Wiggum CLI (optional) | External CLI | None | .ralph/ | ⚠️ Optional |
 | 9 | Cognee (optional long-term memory) | External graph memory backend | None | External/adapter-managed | ⚠️ Optional |
 | 10 | xan (optional large-CSV backend) | External CLI | None | Dataset files / shell pipelines | ⚠️ Optional |
+| 11 | fuck-u-code (optional quality debt analyzer) | External CLI | None | Analyzer workspace / report output | ⚠️ Optional |
 
 ## Verification Status Legend
 
@@ -292,3 +293,21 @@ Characteristics:
 - Activated through data-scale overlay (`data_scale_advice`) using real file signals.
 - Does not replace workbook-focused skills (`xlsx`, `excel-analysis`).
 - Does not replace ML workflow routing (`data-ml` pack remains authoritative for model tasks).
+
+---
+
+## 11. fuck-u-code (Optional Quality Debt Analyzer)
+
+**Package/Repo**: `Done-0/fuck-u-code`  
+**Binary**: `fuck-u-code` (optional, environment-specific)
+
+### Key Capabilities
+- Offline-oriented quality debt signal extraction (maintainability/test/security debt perspectives)
+- Works as a focused analyzer to complement normal review flows
+- Useful for difficult cleanup/refactor tasks where plain lint/test signals are insufficient
+
+### VCO Integration Boundary
+- Integrated through `quality-debt-overlay` as post-route advice only.
+- Does not replace `code-reviewer`, `security-reviewer`, or `tdd-guide`.
+- Missing binary never blocks routing; status is reported as `tool_unavailable`.
+- Current default is `manual_only` invocation hint mode to keep routing deterministic.

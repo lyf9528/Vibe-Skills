@@ -171,6 +171,12 @@ if ($InstallExternal) {
     Write-Host "xan already installed"
   }
 
+  if (-not (Get-Command fuck-u-code -ErrorAction SilentlyContinue)) {
+    Write-Warning "fuck-u-code CLI not detected. Install manually if you want external quality-debt analyzer hints (quality-debt-overlay remains functional without it)."
+  } else {
+    Write-Host "fuck-u-code already installed"
+  }
+
   try {
     $manifest = Get-Content -LiteralPath (Join-Path $RepoRoot 'config\plugins-manifest.codex.json') -Raw | ConvertFrom-Json
     Write-Host "Codex-only mode: plugin auto-install commands are disabled."

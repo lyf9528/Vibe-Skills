@@ -80,6 +80,14 @@
       "integration_mode": "optional-external-cli",
       "local_rewrite_required": false,
       "notes": "Optional large-CSV CLI backend used by data-scale overlay and xan skill"
+    },
+    {
+      "id": "Done-0/fuck-u-code",
+      "upstream_repo": "https://github.com/Done-0/fuck-u-code",
+      "upstream_ref": "main",
+      "integration_mode": "optional-external-cli",
+      "local_rewrite_required": false,
+      "notes": "Optional quality-debt analyzer backend for quality-debt-overlay (advice-only integration in VCO)"
     }
   ]
 }
