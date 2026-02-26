@@ -111,6 +111,7 @@ When `config/ml-lifecycle-overlay.json` is enabled, router emits `ml_lifecycle_a
 When `config/python-clean-code-overlay.json` is enabled, router emits `python_clean_code_advice` to expose Python clean-code guidance with automatic `.py` signal detection in a post-route, advice-first way.
 When `config/system-design-overlay.json` is enabled, router emits `system_design_advice` to expose system-design-primer architecture coverage guidance in a post-route, advice-first way.
 When `config/cuda-kernel-overlay.json` is enabled, router emits `cuda_kernel_advice` to expose LeetCUDA-inspired CUDA kernel optimization coverage guidance in a post-route, advice-first way.
+When `config/observability-policy.json` is enabled, router writes privacy-safe route telemetry events (`outputs/telemetry/*.jsonl`) for deterministic observability and offline adaptive suggestions; route assignment remains unchanged.
 
 Specialized agents available at ANY grade (exempt from agent boundary rule):
 - build-error-resolver: build-specific errors (compat alias: local `error-resolver`)
@@ -249,6 +250,7 @@ Detect availability AFTER routing selects a tool, BEFORE invoking:
 | docs/python-clean-code-overlay-integration.md | Python clean-code overlay integration (clean-code-python inspired post-route advisory) |
 | docs/system-design-overlay-integration.md | System-design overlay integration (system-design-primer inspired architecture coverage advisory) |
 | docs/cuda-kernel-overlay-integration.md | CUDA kernel overlay integration (LeetCUDA inspired kernel optimization advisory) |
+| docs/observability-consistency-governance.md | Observability + consistency governance (lean telemetry + manual rollback confirmation) |
 | docs/skills-consolidation-roadmap.md | Pack consolidation phases and gates |
 | changelog.md | Version history |
 | index.md | Navigation index |
@@ -272,7 +274,7 @@ Detect availability AFTER routing selects a tool, BEFORE invoking:
 
 ## Maintenance
 
-- Version: 2.3.13
+- Version: 2.3.14
 - Updated: 2026-02-26
 - Sources: Source code analysis of 6 plugins (2026-02-18) + Agent-Skills-for-Context-Engineering (2026-02-24)
 - Changelog: references/changelog.md

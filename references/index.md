@@ -26,6 +26,7 @@ Navigation guide for all VCO (Vibe Code Orchestrator) documentation.
 | [../docs/python-clean-code-overlay-integration.md](../docs/python-clean-code-overlay-integration.md) | Python clean-code overlay design (clean-code-python inspired post-route advisory, no route mutation) |
 | [../docs/system-design-overlay-integration.md](../docs/system-design-overlay-integration.md) | System-design overlay design (system-design-primer inspired architecture coverage advisory, no route mutation) |
 | [../docs/cuda-kernel-overlay-integration.md](../docs/cuda-kernel-overlay-integration.md) | CUDA kernel overlay design (LeetCUDA inspired post-route kernel optimization advisory, no route mutation) |
+| [../docs/observability-consistency-governance.md](../docs/observability-consistency-governance.md) | Strict observability/consistency governance (lean telemetry + manual rollback confirmation policy) |
 | [../templates/cer-report.md.template](../templates/cer-report.md.template) | CER markdown template for human-readable retro reports |
 | [../templates/cer-report.json.template](../templates/cer-report.json.template) | CER JSON template for machine analytics and comparison |
 | [../templates/cer-report.schema.json](../templates/cer-report.schema.json) | CER JSON schema for validation gates |

@@ -24,11 +24,12 @@ This directory stores optional verification scripts for CI and local smoke check
 - `vibe-python-clean-code-overlay-gate.ps1`: validates Python clean-code overlay semantics (Python file auto-trigger + principle/anti-pattern scoring + strict confirm advice + route invariance).
 - `vibe-system-design-overlay-gate.ps1`: validates system-design-primer overlay semantics (architecture signal + coverage dimensions + strict confirm advice + route invariance).
 - `vibe-cuda-kernel-overlay-gate.ps1`: validates LeetCUDA-inspired CUDA kernel overlay semantics (CUDA optimization signal + coverage dimensions + strict confirm advice + route invariance).
+- `vibe-observability-gate.ps1`: validates observability policy behavior (privacy-safe telemetry fields + profile IDs + deterministic route event capture).
 
 Related rollout utility:
 
 - `..\governance\set-openspec-rollout.ps1`: stage switch helper for `off | shadow | soft-lxl-planning | strict-lxl-planning`.
-- `..\governance\publish-openspec-soft-rollout.ps1`: single-command soft rollout with precheck -> switch -> postcheck. Default is no rollback; emergency rollback is opt-in.
+- `..\governance\publish-openspec-soft-rollout.ps1`: single-command soft rollout with precheck -> switch -> postcheck. Automatic rollback is disabled; failures emit manual rollback command and require explicit user confirmation.
 - `..\governance\set-gsd-overlay-rollout.ps1`: GSD-Lite overlay stage switch helper for `off | shadow | soft-lxl-planning | strict-lxl-planning`.
 
 ## Quick Start (Retro Checks)
@@ -127,6 +128,12 @@ Run CUDA kernel overlay trigger gate:
 & ".\vibe-cuda-kernel-overlay-gate.ps1"
 ```
 
+Run observability gate:
+
+```powershell
+& ".\vibe-observability-gate.ps1"
+```
+
 Keep generated fixture files for manual inspection:
 
 ```powershell
@@ -185,3 +192,15 @@ Output artifacts:
 - `outputs/external-corpus/skill-keyword-index.candidate.json`
 - `outputs/external-corpus/external-corpus-gate.json`
 - `outputs/external-corpus/external-corpus-gate.md`
+
+## Offline Adaptive Suggestions
+
+Build environment/user-profile-aware threshold suggestions from telemetry (manual apply only):
+
+```powershell
+& "..\learn\vibe-adaptive-train.ps1" -LookbackDays 7
+```
+
+Output artifacts:
+- `outputs/learn/vibe-adaptive-suggestions.json`
+- `outputs/learn/vibe-adaptive-suggestions.md`

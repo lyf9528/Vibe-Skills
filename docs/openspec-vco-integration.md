@@ -73,7 +73,7 @@ Rollout stage switch:
 pwsh -File .\scripts\governance\set-openspec-rollout.ps1 -Stage soft-lxl-planning
 ```
 
-Recommended single-command publish (normal path first, rollback optional):
+Recommended single-command publish (normal path first, manual rollback only on confirmed need):
 
 ```powershell
 pwsh -File .\scripts\governance\publish-openspec-soft-rollout.ps1
@@ -84,12 +84,11 @@ Behavior contract:
 1. Precheck must pass before switch (`vibe-pack-regression-matrix` + strict `vibe-routing-stability-gate`).
 2. After switch, postcheck must pass (`pack-regression` + strict stability + `vibe-openspec-governance-gate`).
 3. Default on postcheck failure is fail-fast without rollback, so issues are visible.
-4. Emergency rollback is opt-in only:
+4. Automatic rollback is disabled. On failure, the script prints a rollback command and requires explicit user confirmation before execution.
+5. Manual rollback command (run only after confirmation):
 
 ```powershell
-pwsh -File .\scripts\governance\publish-openspec-soft-rollout.ps1 `
-  -EnableEmergencyRollbackOnFailure `
-  -RollbackStage shadow
+pwsh -File .\scripts\governance\set-openspec-rollout.ps1 -Stage shadow
 ```
 
 Acceptance criteria:

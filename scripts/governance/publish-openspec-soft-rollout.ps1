@@ -9,6 +9,11 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+if ($EnableEmergencyRollbackOnFailure) {
+    Write-Host "[WARN] Automatic rollback is disabled by governance policy." -ForegroundColor Yellow
+    Write-Host "[WARN] The switch -EnableEmergencyRollbackOnFailure is ignored. Manual confirmation is always required."
+}
+
 function Resolve-PowerShellExe {
     $pwsh = Get-Command pwsh -ErrorAction SilentlyContinue
     if ($pwsh) {
@@ -115,8 +120,8 @@ function Write-ReportArtifacts {
     $lines += "- target_stage: ``$($Summary.target_stage)``"
     $lines += "- precheck_passed: ``$($Summary.precheck_passed)``"
     $lines += "- postcheck_passed: ``$($Summary.postcheck_passed)``"
-    $lines += "- rollback_executed: ``$($Summary.rollback_executed)``"
-    $lines += "- rollback_succeeded: ``$($Summary.rollback_succeeded)``"
+    $lines += "- rollback_policy: ``$($Summary.rollback_policy)``"
+    $lines += "- manual_rollback_required: ``$($Summary.manual_rollback_required)``"
     $lines += ""
     $lines += "## Prechecks"
     $lines += ""
@@ -133,8 +138,12 @@ function Write-ReportArtifacts {
     $lines += "## Switch"
     $lines += ""
     $lines += "- ``$($Summary.switch_step.name)``: passed=``$($Summary.switch_step.passed)`` exit=``$($Summary.switch_step.exit_code)``"
-    if ($Summary.rollback_step) {
-        $lines += "- ``$($Summary.rollback_step.name)``: passed=``$($Summary.rollback_step.passed)`` exit=``$($Summary.rollback_step.exit_code)``"
+    if ($Summary.manual_rollback_required -and $Summary.manual_rollback_command) {
+        $lines += ""
+        $lines += "## Manual Rollback"
+        $lines += ""
+        $lines += "- confirmation_required: ``true``"
+        $lines += "- suggested_command: ``$($Summary.manual_rollback_command)``"
     }
 
     $lines -join "`n" | Set-Content -LiteralPath $mdPath -Encoding UTF8
@@ -175,6 +184,8 @@ if ($MainOnly) {
 $switchStep = $null
 $postchecks = @()
 $rollbackStep = $null
+$manualRollbackRequired = $false
+$manualRollbackCommand = $null
 
 if ($precheckPassed) {
     $switchStep = Invoke-ScriptStep `
@@ -204,17 +215,18 @@ if ($precheckPassed) {
 
 $postcheckPassed = ($postchecks.Count -gt 0) -and (($postchecks | Where-Object { -not $_.passed }).Count -eq 0)
 
-if ($precheckPassed -and $switchStep -and $switchStep.passed -and -not $postcheckPassed -and $EnableEmergencyRollbackOnFailure) {
+if ($precheckPassed -and $switchStep -and $switchStep.passed -and -not $postcheckPassed) {
     $rollbackArgs = @("-Stage", $RollbackStage)
     if ($MainOnly) {
         $rollbackArgs += "-MainOnly"
     }
-
-    $rollbackStep = Invoke-ScriptStep `
-        -Name "rollback.$RollbackStage" `
-        -ScriptPath (Join-Path $repoRoot "scripts/governance/set-openspec-rollout.ps1") `
-        -Arguments $rollbackArgs `
-        -PowerShellExe $powerShellExe
+    $manualRollbackRequired = $true
+    $manualRollbackCommand = "pwsh -File .\scripts\governance\set-openspec-rollout.ps1 {0}" -f ($rollbackArgs -join " ")
+    Write-Host ""
+    Write-Host "[MANUAL ACTION REQUIRED] Postchecks failed. Rollback was NOT executed automatically." -ForegroundColor Yellow
+    Write-Host "Run rollback only after explicit user confirmation:"
+    Write-Host "  $manualRollbackCommand"
+    Write-Host ""
 }
 
 $policyAfter = Read-PolicySummary -Path $mainPolicyPath
@@ -237,17 +249,22 @@ $summary = [pscustomobject]@{
     precheck_skipped = [bool]$SkipPrecheck
     precheck_passed = [bool]$precheckPassed
     postcheck_passed = [bool]$postcheckPassed
-    emergency_rollback_enabled = [bool]$EnableEmergencyRollbackOnFailure
+    rollback_policy = "manual_confirmation_required"
+    rollback_confirmation_required = $true
+    automatic_rollback_supported = $false
+    emergency_rollback_enabled = $false
     rollback_requested_stage = $RollbackStage
-    rollback_executed = [bool]($null -ne $rollbackStep)
-    rollback_succeeded = [bool]($null -ne $rollbackStep -and $rollbackStep.passed)
+    manual_rollback_required = [bool]$manualRollbackRequired
+    manual_rollback_command = $manualRollbackCommand
+    rollback_executed = $false
+    rollback_succeeded = $false
     main_only = [bool]$MainOnly
     policy_before = $policyBefore
     policy_after = $policyAfter
     prechecks = $prechecks
     switch_step = $switchStep
     postchecks = $postchecks
-    rollback_step = $rollbackStep
+    rollback_step = $null
 }
 
 if (-not $OutputDirectory) {

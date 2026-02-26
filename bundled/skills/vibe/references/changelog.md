@@ -1,5 +1,28 @@
 # VCO Changelog
 
+## v2.3.14 (2026-02-26)
+
+- 新增 Observability & Consistency Governance（严格、轻量、低上下文压力）：
+  - 新增配置（main + bundled）：
+    - `config/observability-policy.json`
+    - `bundled/skills/vibe/config/observability-policy.json`
+  - 路由器新增隐私安全遥测写入（不改变路由分配）：
+    - `scripts/router/resolve-pack-route.ps1` 新增 `Write-ObservabilityRouteEvent`
+    - 输出：`outputs/telemetry/route-events-YYYYMMDD.jsonl`
+    - 默认仅写 `prompt_hash` 与结构化路由字段，不落地原始 prompt
+  - 新增验证与学习脚本：
+    - `scripts/verify/vibe-observability-gate.ps1`
+    - `scripts/learn/vibe-adaptive-train.ps1`（离线建议、手动审核应用）
+  - 回退治理升级：
+    - `scripts/governance/publish-openspec-soft-rollout.ps1` 禁用自动回退执行
+    - 发布失败时仅输出手动回退命令，要求用户显式确认后执行
+  - 文档同步：
+    - `docs/observability-consistency-governance.md`（main + bundled）
+    - `docs/openspec-vco-integration.md` 更新为“手动确认回退”策略
+    - `scripts/verify/README.md`、`references/index.md`、`check.ps1`、`check.sh` 同步更新
+  - 一致性门禁：
+    - `scripts/verify/vibe-config-parity-gate.ps1` 纳入 `observability-policy` main/bundled parity
+
 ## v2.3.13 (2026-02-26)
 
 - 新增 CUDA Kernel Overlay（LeetCUDA 增强，post-route advice-only，不替代 Pack 路由）：
