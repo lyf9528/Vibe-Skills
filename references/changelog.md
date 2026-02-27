@@ -1,5 +1,36 @@
 # VCO Changelog
 
+## v2.3.22 (2026-02-27)
+
+- 新增 Retrieval Overlay（检索策略增强，默认 `shadow`，保持 post-route 非侵入）：
+  - 新增配置（main + bundled）：
+    - `config/retrieval-policy.json`
+    - `config/retrieval-intent-profiles.json`
+    - `config/retrieval-source-registry.json`
+    - `config/retrieval-rerank-weights.json`
+  - 新增模块：
+    - `scripts/router/modules/43-retrieval-overlay.ps1`
+  - 路由入口接入：
+    - `scripts/router/resolve-pack-route.ps1`
+    - 新增阶段：`overlay.retrieval`
+    - 路由输出新增：`retrieval_advice`
+- 可观测与探针联动增强：
+  - `scripts/router/modules/11-route-probe.ps1` 将 retrieval 纳入 runtime state prompt 与 final_state 摘要。
+  - `scripts/router/modules/22-intent-contract.ps1` 的 `runtime_state_prompt_digest` 纳入 retrieval overlay。
+  - `scripts/router/modules/10-observability.ps1` 纳入 retrieval profile/coverage/confirm 遥测字段。
+  - `scripts/router/modules/00-core-utils.ps1` 的 `Test-OverlayConfirmRequired` 纳入 retrieval confirm 信号。
+- 新增门禁与验证链路：
+  - `scripts/verify/vibe-retrieval-overlay-gate.ps1`
+  - `scripts/verify/vibe-config-parity-gate.ps1` 纳入 retrieval 配置 parity
+  - `scripts/verify/vibe-pack-routing-smoke.ps1` 纳入 retrieval 配置结构校验
+  - `scripts/verify/vibe-routing-probe-research.ps1` 与 `scripts/verify/vibe-deep-discovery-scenarios.ps1` 更新 stage chain（含 `overlay.retrieval`）
+  - `scripts/verify/README.md` 新增 retrieval gate 入口
+- 文档与健康检查更新：
+  - `docs/retrieval-overlay-integration.md`
+  - `docs/blackbox-probe-and-enhancement-playbook.md`、`docs/deep-discovery-mode-design.md` 更新路由阶段链
+  - `references/index.md` 新增 retrieval 文档入口
+  - `check.ps1` / `check.sh` 新增 retrieval 配置存在性检查
+
 ## v2.3.21 (2026-02-27)
 
 - 统一 `$vibe` 入口复检后，将 heartbeat 默认策略固定为可观测但非侵入：

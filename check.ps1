@@ -50,6 +50,10 @@ Check-Path -Label "vibe observability policy config" -Path (Join-Path $TargetRoo
 Check-Path -Label "vibe heartbeat policy config" -Path (Join-Path $TargetRoot "skills\vibe\config\heartbeat-policy.json")
 Check-Path -Label "vibe deep discovery policy config" -Path (Join-Path $TargetRoot "skills\vibe\config\deep-discovery-policy.json")
 Check-Path -Label "vibe capability catalog config" -Path (Join-Path $TargetRoot "skills\vibe\config\capability-catalog.json")
+Check-Path -Label "vibe retrieval policy config" -Path (Join-Path $TargetRoot "skills\vibe\config\retrieval-policy.json")
+Check-Path -Label "vibe retrieval intent profiles config" -Path (Join-Path $TargetRoot "skills\vibe\config\retrieval-intent-profiles.json")
+Check-Path -Label "vibe retrieval source registry config" -Path (Join-Path $TargetRoot "skills\vibe\config\retrieval-source-registry.json")
+Check-Path -Label "vibe retrieval rerank weights config" -Path (Join-Path $TargetRoot "skills\vibe\config\retrieval-rerank-weights.json")
 
 foreach ($name in $requiredWorkflow) {
   Check-Path -Label "workflow skill/$name" -Path (Join-Path $TargetRoot "skills\$name\SKILL.md")

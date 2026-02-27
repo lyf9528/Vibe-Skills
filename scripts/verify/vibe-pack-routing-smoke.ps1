@@ -28,6 +28,10 @@ $routingRulesPath = Join-Path $configRoot "skill-routing-rules.json"
 $deepDiscoveryPolicyPath = Join-Path $configRoot "deep-discovery-policy.json"
 $capabilityCatalogPath = Join-Path $configRoot "capability-catalog.json"
 $heartbeatPolicyPath = Join-Path $configRoot "heartbeat-policy.json"
+$retrievalPolicyPath = Join-Path $configRoot "retrieval-policy.json"
+$retrievalIntentProfilesPath = Join-Path $configRoot "retrieval-intent-profiles.json"
+$retrievalSourceRegistryPath = Join-Path $configRoot "retrieval-source-registry.json"
+$retrievalRerankWeightsPath = Join-Path $configRoot "retrieval-rerank-weights.json"
 
 $results = @()
 
@@ -40,6 +44,10 @@ $results += Assert-True -Condition (Test-Path -LiteralPath $routingRulesPath) -M
 $results += Assert-True -Condition (Test-Path -LiteralPath $deepDiscoveryPolicyPath) -Message "deep-discovery-policy.json exists"
 $results += Assert-True -Condition (Test-Path -LiteralPath $capabilityCatalogPath) -Message "capability-catalog.json exists"
 $results += Assert-True -Condition (Test-Path -LiteralPath $heartbeatPolicyPath) -Message "heartbeat-policy.json exists"
+$results += Assert-True -Condition (Test-Path -LiteralPath $retrievalPolicyPath) -Message "retrieval-policy.json exists"
+$results += Assert-True -Condition (Test-Path -LiteralPath $retrievalIntentProfilesPath) -Message "retrieval-intent-profiles.json exists"
+$results += Assert-True -Condition (Test-Path -LiteralPath $retrievalSourceRegistryPath) -Message "retrieval-source-registry.json exists"
+$results += Assert-True -Condition (Test-Path -LiteralPath $retrievalRerankWeightsPath) -Message "retrieval-rerank-weights.json exists"
 
 $packManifest = Get-Content -LiteralPath $packManifestPath -Raw -Encoding UTF8 | ConvertFrom-Json
 $aliasMap = Get-Content -LiteralPath $aliasMapPath -Raw -Encoding UTF8 | ConvertFrom-Json
@@ -49,6 +57,10 @@ $routingRules = Get-Content -LiteralPath $routingRulesPath -Raw -Encoding UTF8 |
 $deepDiscoveryPolicy = Get-Content -LiteralPath $deepDiscoveryPolicyPath -Raw -Encoding UTF8 | ConvertFrom-Json
 $capabilityCatalog = Get-Content -LiteralPath $capabilityCatalogPath -Raw -Encoding UTF8 | ConvertFrom-Json
 $heartbeatPolicy = Get-Content -LiteralPath $heartbeatPolicyPath -Raw -Encoding UTF8 | ConvertFrom-Json
+$retrievalPolicy = Get-Content -LiteralPath $retrievalPolicyPath -Raw -Encoding UTF8 | ConvertFrom-Json
+$retrievalIntentProfiles = Get-Content -LiteralPath $retrievalIntentProfilesPath -Raw -Encoding UTF8 | ConvertFrom-Json
+$retrievalSourceRegistry = Get-Content -LiteralPath $retrievalSourceRegistryPath -Raw -Encoding UTF8 | ConvertFrom-Json
+$retrievalRerankWeights = Get-Content -LiteralPath $retrievalRerankWeightsPath -Raw -Encoding UTF8 | ConvertFrom-Json
 
 $requiredPackIds = @(
     "orchestration-core",
@@ -112,6 +124,12 @@ $results += Assert-True -Condition ((@($capabilityCatalog.capabilities).Count -g
 $results += Assert-True -Condition ($heartbeatPolicy.mode -ne $null) -Message "heartbeat mode configured"
 $results += Assert-True -Condition ($heartbeatPolicy.timers.hard_stall_silence_sec -ne $null) -Message "heartbeat hard stall threshold configured"
 $results += Assert-True -Condition ($heartbeatPolicy.timers.user_brief_interval_sec -ne $null) -Message "heartbeat brief interval configured"
+$results += Assert-True -Condition ($retrievalPolicy.mode -ne $null) -Message "retrieval mode configured"
+$results += Assert-True -Condition ($retrievalPolicy.profile_selection.min_profile_confidence -ne $null) -Message "retrieval profile min confidence configured"
+$results += Assert-True -Condition ($retrievalPolicy.coverage.max_retrieve_rounds -ne $null) -Message "retrieval max retrieve rounds configured"
+$results += Assert-True -Condition ((@($retrievalIntentProfiles.profiles).Count -gt 0)) -Message "retrieval intent profiles configured"
+$results += Assert-True -Condition ((@($retrievalSourceRegistry.sources).Count -gt 0)) -Message "retrieval source registry configured"
+$results += Assert-True -Condition ($retrievalRerankWeights.modes -ne $null) -Message "retrieval rerank modes configured"
 
 foreach ($ruleProp in @($routingRules.skills.PSObject.Properties | Select-Object -First 10)) {
     $rule = $ruleProp.Value

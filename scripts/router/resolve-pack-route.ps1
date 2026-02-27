@@ -35,7 +35,8 @@ $routerModules = @(
     "39-system-design-overlay.ps1",
     "40-cuda-kernel-overlay.ps1",
     "41-candidate-selection.ps1",
-    "42-ai-rerank-overlay.ps1"
+    "42-ai-rerank-overlay.ps1",
+    "43-retrieval-overlay.ps1"
 )
 
 foreach ($routerModule in $routerModules) {
@@ -67,6 +68,10 @@ $cudaKernelOverlayPolicyPath = Join-Path $configRoot "cuda-kernel-overlay.json"
 $observabilityPolicyPath = Join-Path $configRoot "observability-policy.json"
 $heartbeatPolicyPath = Join-Path $configRoot "heartbeat-policy.json"
 $aiRerankPolicyPath = Join-Path $configRoot "ai-rerank-policy.json"
+$retrievalPolicyPath = Join-Path $configRoot "retrieval-policy.json"
+$retrievalIntentProfilesPath = Join-Path $configRoot "retrieval-intent-profiles.json"
+$retrievalSourceRegistryPath = Join-Path $configRoot "retrieval-source-registry.json"
+$retrievalRerankWeightsPath = Join-Path $configRoot "retrieval-rerank-weights.json"
 $probePolicyPath = Join-Path $configRoot "router-probe-policy.json"
 $deepDiscoveryPolicyPath = Join-Path $configRoot "deep-discovery-policy.json"
 $capabilityCatalogPath = Join-Path $configRoot "capability-catalog.json"
@@ -166,6 +171,42 @@ $aiRerankPolicy = if (Test-Path -LiteralPath $aiRerankPolicyPath) {
 } else {
     $null
 }
+$retrievalPolicy = if (Test-Path -LiteralPath $retrievalPolicyPath) {
+    try {
+        Get-Content -LiteralPath $retrievalPolicyPath -Raw -Encoding UTF8 | ConvertFrom-Json
+    } catch {
+        $null
+    }
+} else {
+    $null
+}
+$retrievalIntentProfiles = if (Test-Path -LiteralPath $retrievalIntentProfilesPath) {
+    try {
+        Get-Content -LiteralPath $retrievalIntentProfilesPath -Raw -Encoding UTF8 | ConvertFrom-Json
+    } catch {
+        $null
+    }
+} else {
+    $null
+}
+$retrievalSourceRegistry = if (Test-Path -LiteralPath $retrievalSourceRegistryPath) {
+    try {
+        Get-Content -LiteralPath $retrievalSourceRegistryPath -Raw -Encoding UTF8 | ConvertFrom-Json
+    } catch {
+        $null
+    }
+} else {
+    $null
+}
+$retrievalRerankWeights = if (Test-Path -LiteralPath $retrievalRerankWeightsPath) {
+    try {
+        Get-Content -LiteralPath $retrievalRerankWeightsPath -Raw -Encoding UTF8 | ConvertFrom-Json
+    } catch {
+        $null
+    }
+} else {
+    $null
+}
 $probePolicy = if (Test-Path -LiteralPath $probePolicyPath) {
     try {
         Get-Content -LiteralPath $probePolicyPath -Raw -Encoding UTF8 | ConvertFrom-Json
@@ -246,6 +287,7 @@ Add-RouteProbeEvent -Context $probeContext -Stage "router.config" -Note "core ro
         system_design_mode = if ($systemDesignOverlayPolicy -and $systemDesignOverlayPolicy.mode) { [string]$systemDesignOverlayPolicy.mode } else { "off" }
         cuda_kernel_mode = if ($cudaKernelOverlayPolicy -and $cudaKernelOverlayPolicy.mode) { [string]$cudaKernelOverlayPolicy.mode } else { "off" }
         ai_rerank_mode = if ($aiRerankPolicy -and $aiRerankPolicy.mode) { [string]$aiRerankPolicy.mode } else { "off" }
+        retrieval_mode = if ($retrievalPolicy -and $retrievalPolicy.mode) { [string]$retrievalPolicy.mode } else { "off" }
         observability_mode = if ($observabilityPolicy -and $observabilityPolicy.mode) { [string]$observabilityPolicy.mode } else { "off" }
         heartbeat_mode = if ($heartbeatPolicy -and $heartbeatPolicy.mode) { [string]$heartbeatPolicy.mode } else { "off" }
         deep_discovery_mode = if ($deepDiscoveryPolicy -and $deepDiscoveryPolicy.mode) { [string]$deepDiscoveryPolicy.mode } else { "off" }
@@ -647,6 +689,32 @@ $cudaKernelAdvice = Get-CudaKernelOverlayAdvice `
     -PackCandidates $(if ($effectiveTop) { @($effectiveTop.candidates) } else { @() }) `
     -CudaKernelOverlayPolicy $cudaKernelOverlayPolicy
 
+$retrievalAdvice = Get-RetrievalOverlayAdvice `
+    -Prompt $Prompt `
+    -PromptLower $promptLower `
+    -Grade $Grade `
+    -TaskType $TaskType `
+    -RouteMode $routeMode `
+    -SelectedPackId $(if ($effectiveTop) { [string]$effectiveTop.pack_id } else { $null }) `
+    -SelectedSkill $effectiveSelectedSkill `
+    -PackCandidates $(if ($effectiveTop) { @($effectiveTop.candidates) } else { @() }) `
+    -RetrievalPolicy $retrievalPolicy `
+    -RetrievalIntentProfiles $retrievalIntentProfiles `
+    -RetrievalSourceRegistry $retrievalSourceRegistry `
+    -RetrievalRerankWeights $retrievalRerankWeights
+
+Add-RouteProbeEvent -Context $probeContext -Stage "overlay.retrieval" -Note "retrieval overlay evaluated" -Data @{
+    advice = Get-RouteProbeAdviceSummary -Advice $retrievalAdvice
+    selected_pack = if ($effectiveTop) { [string]$effectiveTop.pack_id } else { $null }
+    selected_skill = $effectiveSelectedSkill
+    route_mode_after = $routeMode
+    route_reason_after = $routeReason
+}
+$null = Add-HeartbeatPulse -Context $heartbeatContext -Stage "overlay.retrieval" -Phase "overlay" -Note "retrieval overlay evaluated" -Data @{
+    confirm_required = if ($retrievalAdvice) { [bool]$retrievalAdvice.confirm_required } else { $false }
+    profile_id = if ($retrievalAdvice -and $retrievalAdvice.profile_id) { [string]$retrievalAdvice.profile_id } else { "none" }
+}
+
 Add-RouteProbeEvent -Context $probeContext -Stage "overlay.bundle" -Note "post-route advisory overlays evaluated" -Data @{
     quality_debt = Get-RouteProbeAdviceSummary -Advice $qualityDebtAdvice
     framework_interop = Get-RouteProbeAdviceSummary -Advice $frameworkInteropAdvice
@@ -654,6 +722,7 @@ Add-RouteProbeEvent -Context $probeContext -Stage "overlay.bundle" -Note "post-r
     python_clean_code = Get-RouteProbeAdviceSummary -Advice $pythonCleanCodeAdvice
     system_design = Get-RouteProbeAdviceSummary -Advice $systemDesignAdvice
     cuda_kernel = Get-RouteProbeAdviceSummary -Advice $cudaKernelAdvice
+    retrieval = Get-RouteProbeAdviceSummary -Advice $retrievalAdvice
 }
 $null = Add-HeartbeatPulse -Context $heartbeatContext -Stage "overlay.bundle" -Phase "overlay" -Note "post-route advisory overlays evaluated"
 $heartbeatFinalizeStatus = Finalize-HeartbeatContext -Context $heartbeatContext -FinalPhase "router.final" -Succeeded $true -Note "route output assembled"
@@ -703,6 +772,7 @@ $result = [pscustomobject]@{
     python_clean_code_advice = $pythonCleanCodeAdvice
     system_design_advice = $systemDesignAdvice
     cuda_kernel_advice = $cudaKernelAdvice
+    retrieval_advice = $retrievalAdvice
     heartbeat_advice = $heartbeatAdvice
     heartbeat_status = $heartbeatStatus
     heartbeat_runtime_digest = $heartbeatRuntimeDigest
@@ -756,6 +826,13 @@ Add-RouteProbeEvent -Context $probeContext -Stage "router.final" -Note "final ro
         suspect_stall = if ($result.heartbeat_status) { [bool]$result.heartbeat_status.suspect_stall } else { $false }
         confirm_required = if ($result.heartbeat_advice) { [bool]$result.heartbeat_advice.confirm_required } else { $false }
         auto_diagnosis_triggered = if ($result.heartbeat_advice) { [bool]$result.heartbeat_advice.auto_diagnosis_triggered } else { $false }
+    }
+    retrieval = [pscustomobject]@{
+        profile_id = if ($result.retrieval_advice -and $result.retrieval_advice.profile_id) { [string]$result.retrieval_advice.profile_id } else { "none" }
+        profile_confidence = if ($result.retrieval_advice -and $result.retrieval_advice.profile_confidence -ne $null) { [double]$result.retrieval_advice.profile_confidence } else { 0.0 }
+        profile_ambiguous = if ($result.retrieval_advice) { [bool]$result.retrieval_advice.profile_ambiguous } else { $false }
+        needs_requery = if ($result.retrieval_advice -and $result.retrieval_advice.coverage_gate) { [bool]$result.retrieval_advice.coverage_gate.needs_requery } else { $false }
+        confirm_required = if ($result.retrieval_advice) { [bool]$result.retrieval_advice.confirm_required } else { $false }
     }
     observability = if ($observabilityWrite) { $observabilityWrite } else { $null }
 }

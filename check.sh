@@ -47,6 +47,10 @@ check_path "vibe observability policy config" "${TARGET_ROOT}/skills/vibe/config
 check_path "vibe heartbeat policy config" "${TARGET_ROOT}/skills/vibe/config/heartbeat-policy.json"
 check_path "vibe deep discovery policy config" "${TARGET_ROOT}/skills/vibe/config/deep-discovery-policy.json"
 check_path "vibe capability catalog config" "${TARGET_ROOT}/skills/vibe/config/capability-catalog.json"
+check_path "vibe retrieval policy config" "${TARGET_ROOT}/skills/vibe/config/retrieval-policy.json"
+check_path "vibe retrieval intent profiles config" "${TARGET_ROOT}/skills/vibe/config/retrieval-intent-profiles.json"
+check_path "vibe retrieval source registry config" "${TARGET_ROOT}/skills/vibe/config/retrieval-source-registry.json"
+check_path "vibe retrieval rerank weights config" "${TARGET_ROOT}/skills/vibe/config/retrieval-rerank-weights.json"
 for n in brainstorming writing-plans subagent-driven-development systematic-debugging; do
   check_path "workflow/${n}" "${TARGET_ROOT}/skills/${n}/SKILL.md"
 done

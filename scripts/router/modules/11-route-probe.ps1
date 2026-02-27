@@ -36,6 +36,11 @@ function Get-RouteProbeAdviceSummary {
         "would_override",
         "override_target_pack",
         "override_target_skill",
+        "profile_id",
+        "profile_confidence",
+        "profile_ambiguous",
+        "needs_requery",
+        "coverage_score",
         "status",
         "lifecycle_status",
         "pulse_count",
@@ -229,7 +234,8 @@ function Get-RouteRuntimeStatePrompt {
         @{ Name = "ml_lifecycle"; Advice = $Result.ml_lifecycle_advice },
         @{ Name = "python_clean_code"; Advice = $Result.python_clean_code_advice },
         @{ Name = "system_design"; Advice = $Result.system_design_advice },
-        @{ Name = "cuda_kernel"; Advice = $Result.cuda_kernel_advice }
+        @{ Name = "cuda_kernel"; Advice = $Result.cuda_kernel_advice },
+        @{ Name = "retrieval"; Advice = $Result.retrieval_advice }
     )
 
     foreach ($overlaySpec in $overlaySpecs) {
@@ -351,6 +357,11 @@ function Write-RouteProbeArtifact {
             ai_rerank_route_override = $Result.ai_rerank_route_override
             prompt_overlay_route_override = $Result.prompt_overlay_route_override
             data_scale_route_override = $Result.data_scale_route_override
+            retrieval_profile_id = if ($Result.retrieval_advice -and $Result.retrieval_advice.profile_id) { [string]$Result.retrieval_advice.profile_id } else { "none" }
+            retrieval_profile_confidence = if ($Result.retrieval_advice -and $Result.retrieval_advice.profile_confidence -ne $null) { [double]$Result.retrieval_advice.profile_confidence } else { 0.0 }
+            retrieval_profile_ambiguous = if ($Result.retrieval_advice) { [bool]$Result.retrieval_advice.profile_ambiguous } else { $false }
+            retrieval_needs_requery = if ($Result.retrieval_advice -and $Result.retrieval_advice.coverage_gate) { [bool]$Result.retrieval_advice.coverage_gate.needs_requery } else { $false }
+            retrieval_confirm_required = if ($Result.retrieval_advice) { [bool]$Result.retrieval_advice.confirm_required } else { $false }
             heartbeat_mode = if ($Result.heartbeat_advice -and $Result.heartbeat_advice.mode) { [string]$Result.heartbeat_advice.mode } else { "off" }
             heartbeat_status = if ($Result.heartbeat_status -and $Result.heartbeat_status.current_status) { [string]$Result.heartbeat_status.current_status } else { "disabled" }
             heartbeat_lifecycle_status = if ($Result.heartbeat_status -and $Result.heartbeat_status.lifecycle_status) { [string]$Result.heartbeat_status.lifecycle_status } else { "disabled" }
