@@ -264,6 +264,7 @@ $weightSkillSignal = if ($weights.skill_keyword_signal -ne $null) { [double]$wei
 $candidateSelectionConfig = if ($thresholds.candidate_selection) { $thresholds.candidate_selection } else { $null }
 $minTopGap = if ($th.min_top1_top2_gap -ne $null) { [double]$th.min_top1_top2_gap } else { 0.0 }
 $minCandidateSignalForConfirmOverride = if ($th.min_candidate_signal_for_confirm_override -ne $null) { [double]$th.min_candidate_signal_for_confirm_override } else { 0.0 }
+$enforceConfirmOnLegacyFallback = if ($rules.enforce_confirm_on_legacy_fallback -ne $null) { [bool]$rules.enforce_confirm_on_legacy_fallback } else { $false }
 
 $probeContext = New-RouteProbeContext `
     -ProbeSwitch:$Probe `
@@ -295,6 +296,7 @@ Add-RouteProbeEvent -Context $probeContext -Stage "router.config" -Note "core ro
         confirm_required = [double]$th.confirm_required
         fallback_to_legacy_below = [double]$th.fallback_to_legacy_below
         min_top1_top2_gap = [double]$minTopGap
+        enforce_confirm_on_legacy_fallback = [bool]$enforceConfirmOnLegacyFallback
     }
     policies = @{
         openspec_mode = if ($openSpecPolicy -and $openSpecPolicy.mode) { [string]$openSpecPolicy.mode } else { "off" }
@@ -826,6 +828,29 @@ Add-RouteProbeEvent -Context $probeContext -Stage "overlay.bundle" -Note "post-r
     retrieval = Get-RouteProbeAdviceSummary -Advice $retrievalAdvice
 }
 $null = Add-HeartbeatPulse -Context $heartbeatContext -Stage "overlay.bundle" -Phase "overlay" -Note "post-route advisory overlays evaluated"
+
+$legacyFallbackOriginalReason = $null
+$legacyFallbackGuardApplied = $false
+if ($routeMode -eq "legacy_fallback" -and $enforceConfirmOnLegacyFallback) {
+    $legacyFallbackOriginalReason = [string]$routeReason
+    $routeMode = "confirm_required"
+    $routeReason = "legacy_fallback_guard"
+    $confidence = [Math]::Max($confidence, [double]$th.confirm_required)
+    $legacyFallbackGuardApplied = $true
+}
+
+Add-RouteProbeEvent -Context $probeContext -Stage "router.legacy_fallback_guard" -Note "legacy fallback visibility guard evaluated" -Data @{
+    enabled = [bool]$enforceConfirmOnLegacyFallback
+    applied = [bool]$legacyFallbackGuardApplied
+    original_reason = $legacyFallbackOriginalReason
+    route_mode_after = $routeMode
+    route_reason_after = $routeReason
+}
+$null = Add-HeartbeatPulse -Context $heartbeatContext -Stage "router.legacy_fallback_guard" -Phase "router.guard" -Note "legacy fallback guard evaluated" -Data @{
+    enabled = [bool]$enforceConfirmOnLegacyFallback
+    applied = [bool]$legacyFallbackGuardApplied
+}
+
 $heartbeatFinalizeStatus = Finalize-HeartbeatContext -Context $heartbeatContext -FinalPhase "router.final" -Succeeded $true -Note "route output assembled"
 $heartbeatAdvice = Get-HeartbeatAdvice -Context $heartbeatContext
 $heartbeatStatus = if ($heartbeatFinalizeStatus) { $heartbeatFinalizeStatus } else { Get-HeartbeatStatus -Context $heartbeatContext }
@@ -845,12 +870,15 @@ $result = [pscustomobject]@{
     confidence = [Math]::Round($confidence, 4)
     top1_top2_gap = [Math]::Round($topGap, 4)
     candidate_signal = [Math]::Round($candidateSignal, 4)
+    legacy_fallback_guard_applied = [bool]$legacyFallbackGuardApplied
+    legacy_fallback_original_reason = $legacyFallbackOriginalReason
     thresholds = [pscustomobject]@{
         auto_route = [double]$th.auto_route
         confirm_required = [double]$th.confirm_required
         fallback_to_legacy_below = [double]$th.fallback_to_legacy_below
         min_top1_top2_gap = [double]$minTopGap
         min_candidate_signal_for_confirm_override = [double]$minCandidateSignalForConfirmOverride
+        enforce_confirm_on_legacy_fallback = [bool]$enforceConfirmOnLegacyFallback
     }
     alias = $aliasResult
     openspec_advice = $openSpecAdvice
@@ -913,6 +941,8 @@ Add-RouteProbeEvent -Context $probeContext -Stage "router.final" -Note "final ro
     selected_pack = if ($result.selected) { [string]$result.selected.pack_id } else { $null }
     selected_skill = if ($result.selected) { [string]$result.selected.skill } else { $null }
     confidence = [double]$result.confidence
+    legacy_fallback_guard_applied = [bool]$result.legacy_fallback_guard_applied
+    legacy_fallback_original_reason = $result.legacy_fallback_original_reason
     deep_discovery = [pscustomobject]@{
         trigger_active = [bool]($result.deep_discovery_advice -and $result.deep_discovery_advice.trigger_active)
         trigger_score = if ($result.deep_discovery_advice -and $result.deep_discovery_advice.trigger_score -ne $null) { [double]$result.deep_discovery_advice.trigger_score } else { 0.0 }

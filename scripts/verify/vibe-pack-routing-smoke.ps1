@@ -125,6 +125,7 @@ $results += Assert-True -Condition ($confirmRequired -ge $fallbackBelow) -Messag
 $results += Assert-True -Condition ($thresholds.thresholds.min_top1_top2_gap -ne $null) -Message "min_top1_top2_gap threshold configured"
 $results += Assert-True -Condition ($thresholds.safety.enforce_grade_boundary -eq $true) -Message "grade boundary safety is enabled"
 $results += Assert-True -Condition ($thresholds.safety.enforce_task_boundary -eq $true) -Message "task boundary safety is enabled"
+$results += Assert-True -Condition ($thresholds.safety.enforce_confirm_on_legacy_fallback -eq $true) -Message "legacy fallback confirm guard is enabled"
 $results += Assert-True -Condition ($thresholds.weights.skill_keyword_signal -ne $null) -Message "skill_keyword_signal weight is configured"
 $results += Assert-True -Condition ($thresholds.candidate_selection.rule_positive_keyword_bonus -ne $null) -Message "candidate_selection positive bonus configured"
 $results += Assert-True -Condition ($thresholds.candidate_selection.rule_negative_keyword_penalty -ne $null) -Message "candidate_selection negative penalty configured"
