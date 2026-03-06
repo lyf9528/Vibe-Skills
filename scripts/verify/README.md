@@ -8,6 +8,7 @@ For a single entrypoint that ties route probing, semantic expansion, threshold t
 - `vibe-soft-migration-practice.ps1`: practical soft-migration checks for alias routing and legacy fallback behavior.
 - `vibe-pack-regression-matrix.ps1`: broad pack-level regression matrix and determinism checks.
 - `vibe-keyword-precision-audit.ps1`: bilingual keyword precision audit (EN/ZH), cross-pack interference gap checks, and full skill-by-skill routing sweep.
+- `vibe-trigger-keyword-hygiene-gate.ps1`: trigger keyword hygiene gate (empty/whitespace/case-duplicate detection + cross-pack collision report, optional strict collision fail).
 - `vibe-skill-index-routing-audit.ps1`: per-skill keyword index routing checks using common Chinese business phrases and ambiguous same-pack scenarios.
 - `vibe-routing-stability-gate.ps1`: synonym-group and task-cross routing gate. Reports `route_stability`, `top1_top2_gap`, `fallback_rate`, and `misroute_rate`, with optional strict thresholds.
 - `vibe-config-parity-gate.ps1`: config parity gate for main vs bundled VCO JSON configs using normalized structural comparison + hash + diff-path output.
