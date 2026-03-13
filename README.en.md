@@ -83,6 +83,12 @@ If you want the full statement of what this ecosystem is trying to build, what i
 
 - [`docs/manifesto.en.md`](./docs/manifesto.en.md)
 
+## Current Recommended Release
+
+- Current outward-facing recommended version: [`v2.3.37`](./docs/releases/v2.3.37.md)
+- Ordinary-user one-click release copy: [`docs/install/one-click-install-release-copy.en.md`](./docs/install/one-click-install-release-copy.en.md)
+- Operator-grade install path: [`docs/install/recommended-full-path.en.md`](./docs/install/recommended-full-path.en.md)
+
 ## Start Here
 
 If you are:
@@ -94,6 +100,14 @@ If you are:
 You can start here.
 
 ### Install Guide
+
+#### Ordinary-user fast path
+
+If you want the simplest public-facing onboarding path for ordinary users, community posts, or "copy this into your AI assistant" onboarding, start here:
+
+- [`docs/install/one-click-install-release-copy.en.md`](./docs/install/one-click-install-release-copy.en.md)
+
+This is the current public install copy for `v2.3.37`.
 
 #### Start with the standard recommended install
 
