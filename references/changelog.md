@@ -1,5 +1,13 @@
 # VCO Changelog
 
+## v2.3.42 (2026-03-14)
+
+- Converted the Linux full-authoritative candidate proof bundle into a truly distributable governed artifact by tracking the frozen `*.log` evidence files instead of letting clean clones silently lose them to `.gitignore`.
+- Added `scripts/verify/vibe-proof-bundle-tracked-files-gate.ps1` so manifest-declared proof artifacts, operation records, and fresh-machine reports must all be git-tracked before release truth can be called green.
+- Wired the new tracked-files gate into the platform-promotion bundle so `vibe-platform-promotion-bundle.ps1` now fails whenever proof truth depends on author-machine residue.
+- Corrected the release-truth mismatch discovered in `v2.3.41`: Linux remains `supported-with-constraints`, but proof/promotion governance is now evaluated against versioned repository contents rather than ignored local leftovers.
+- Detailed release notes: `docs/releases/v2.3.42.md`.
+
 ## v2.3.41 (2026-03-14)
 
 - Replaced `USERPROFILE`-only default target-root assumptions across additional official PowerShell entrypoints with the shared platform-aware resolver so Linux + `pwsh` no longer trips on null home-path defaults.

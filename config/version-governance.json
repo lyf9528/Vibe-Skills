@@ -1,10 +1,10 @@
 {
     "schema_version":  2,
     "release":  {
-                    "version":  "2.3.41",
+                    "version":  "2.3.42",
                     "updated":  "2026-03-14",
                     "channel":  "stable",
-                    "notes":  "Hardens Linux target-root portability across official entrypoints, adds canonical proof-gate execution-context locking, and keeps Linux release truth conservative while aligning governed manifests."
+                    "notes":  "Tracks Linux proof-bundle evidence inside the governed repo surface, adds a manifest-required-files-tracked gate, and realigns release truth so clean clones reproduce the same promotion verdict."
                 },
     "source_of_truth":  {
                             "canonical_root":  ".",

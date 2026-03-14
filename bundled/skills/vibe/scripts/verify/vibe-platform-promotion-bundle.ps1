@@ -127,6 +127,7 @@ foreach ($docRel in $requiredDocs) {
 $gateSpecs = @(
     'scripts/verify/vibe-platform-support-contract-gate.ps1',
     'scripts/verify/vibe-platform-doctor-parity-gate.ps1',
+    'scripts/verify/vibe-proof-bundle-tracked-files-gate.ps1',
     'scripts/verify/vibe-linux-pwsh-proof-gate.ps1'
 )
 

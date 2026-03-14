@@ -36,3 +36,13 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify\vibe-platfo
 Run these gates from the canonical git checkout root. They are governance proof gates, not installed-runtime self-checks.
 
 The gates are expected to pass in pre-promotion mode, which means the proof artifacts must remain complete while replay/docs/release truth stays synchronized to `supported-with-constraints`.
+
+## Distribution Rule
+
+The frozen proof artifacts in this bundle, including the `*.log` evidence files referenced by `manifest.json`, are intentionally tracked in git.
+
+That rule is part of the release-truth contract:
+
+- a clean clone must contain the same proof files as the author machine
+- proof-gate green must not depend on ignored local residue
+- promotion truth must be reproducible from versioned repository contents alone
