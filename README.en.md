@@ -2,7 +2,7 @@
 
 # VibeSkills
 
-> The core principle is standardization. Only with standardization can human intent be described clearly enough, AI work stay stable enough, and long-term maintenance and technical debt remain under control.
+> The core of this project is standardization. Only with standardization can human intent be described clearly enough, AI work stay stable enough, and long-term maintenance and technical debt remain under control.
 
 `VibeSkills` is the public-facing name. `VCO` is the governed runtime behind it.
 
