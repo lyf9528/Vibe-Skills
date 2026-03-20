@@ -31,8 +31,8 @@
     "venv_python_unix": "${VCO_EXTERNAL_ROOT}/ruc-nlpir/.venv/bin/python"
   },
   "llm": {
-    "base_url_default": "https://right.codes/codex/v1",
-    "model_default": "gpt-5.2-high",
+    "base_url_default": "https://your-openai-compatible-endpoint/v1",
+    "model_default": "your-model-id",
     "api_key_env": "OPENAI_API_KEY",
     "base_url_env_candidates": ["OPENAI_BASE_URL", "OPENAI_API_BASE"],
     "model_env": "VCO_RUCNLPIR_MODEL",

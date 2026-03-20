@@ -144,6 +144,8 @@ Traditional Skills repositories answer: *"What tools do I have here?"* VibeSkill
 * 🛠 [Recommended Full Installation Path](./docs/install/recommended-full-path.md)
 * 🧊 [Cold Start & Other Environment Installation Paths](./docs/cold-start-install-paths.md)
 
+> Reminder: do not reuse repository example values for the AI governance layer. When enabling it, the user must provide and confirm their own `url`, `apikey`, and `model`; if AI is helping with installation or config generation, the prompt should explicitly remind the user to supply those three values before anything is written.
+
 ---
 
 <div align="center">

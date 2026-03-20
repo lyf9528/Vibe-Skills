@@ -25,7 +25,7 @@ function Get-LlmAccelerationPolicyDefaults {
         }
         provider = [pscustomobject]@{
             type = "openai" # openai|mock
-            model = "gpt-5.2-codex"
+            model = "your-model-id"
             base_url = ""
             timeout_ms = 2500
             max_output_tokens = 900

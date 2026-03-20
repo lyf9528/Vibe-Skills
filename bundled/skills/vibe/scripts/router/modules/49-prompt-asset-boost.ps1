@@ -30,7 +30,7 @@ function Get-PromptAssetBoostPolicyDefaults {
         }
         provider = [pscustomobject]@{
             type = "openai" # openai|mock
-            model = "gpt-5.2-high"
+            model = "your-model-id"
             base_url = ""
             mock_response_path = ""
             timeout_ms = 9000
@@ -375,7 +375,7 @@ function Invoke-PromptAssetBoostProvider {
         }
     }
 
-    $model = if ($PolicyResolved.provider.model) { [string]$PolicyResolved.provider.model } else { "gpt-5.2-high" }
+    $model = if ($PolicyResolved.provider.model) { [string]$PolicyResolved.provider.model } else { "your-model-id" }
     $baseUrl = if ($PolicyResolved.provider.base_url) { [string]$PolicyResolved.provider.base_url } else { "" }
     $timeoutMsSafe = [Math]::Max(500, [int]$PolicyResolved.provider.timeout_ms)
     $maxTokens = [int]$PolicyResolved.provider.max_output_tokens

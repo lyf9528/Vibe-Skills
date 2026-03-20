@@ -262,6 +262,8 @@ pwsh -File .\install.ps1 -Profile full
 pwsh -File .\check.ps1 -Profile full
 ```
 
+提醒：如果要启用 AI 智能治理层（如 LLM acceleration / governance overlay），不要沿用仓库里的公开示例值。安装前应由用户明确提供 `url`、`apikey`、`model`；如果由 AI 帮助安装或生成配置，提示词也要先提醒用户确认这三项，再继续落盘。
+
 ### 安装可选外部增强
 
 ```powershell

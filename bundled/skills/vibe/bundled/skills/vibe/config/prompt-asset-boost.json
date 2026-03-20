@@ -33,8 +33,8 @@
                 },
     "provider":  {
                      "type":  "mock",
-                     "model":  "gpt-5.2-high",
-                     "base_url":  "https://right.codes/codex/v1",
+                     "model":  "your-model-id",
+                     "base_url":  "https://your-openai-compatible-endpoint/v1",
                      "mock_response_path":  "scripts/verify/fixtures/prompt-asset-boost.mock.json",
                      "timeout_ms":  50,
                      "max_output_tokens":  1200,

@@ -12,9 +12,9 @@
                 "VCO_PROFILE":  "full",
                 "VCO_CODEX_MODE":  "true",
                 "OPENAI_API_KEY":  "\u003cREQUIRED\u003e",
-                "OPENAI_BASE_URL":  "https://right.codes/codex/v1",
+                "OPENAI_BASE_URL":  "https://your-openai-compatible-endpoint/v1",
                 "ARK_BASE_URL":  "https://ark.cn-beijing.volces.com/api/v3",
                 "ARK_API_KEY":  "\u003cOPTIONAL (TurboMax vector_diff embeddings)\u003e",
-                "VCO_RUCNLPIR_MODEL":  "gpt-5.2-high"
+                "VCO_RUCNLPIR_MODEL":  "your-model-id"
             }
 }

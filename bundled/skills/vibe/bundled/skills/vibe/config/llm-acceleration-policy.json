@@ -19,8 +19,8 @@
   },
   "provider": {
     "type": "openai",
-    "model": "gpt-5.2-high",
-    "base_url": "https://right.codes/codex/v1",
+    "model": "your-model-id",
+    "base_url": "https://your-openai-compatible-endpoint/v1",
     "timeout_ms": 12000,
     "max_output_tokens": 1600,
     "temperature": 0.15,
