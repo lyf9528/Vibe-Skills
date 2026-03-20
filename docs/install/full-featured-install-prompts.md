@@ -28,7 +28,7 @@
 
 ```text
 请你把当前仓库按 VibeSkills 标准推荐安装路径装好，并严格遵守 truth-first 原则：
-
+仓库地址：https://github.com/foryourhealth111-pixel/Vibe-Skills
 1. 先识别当前系统是 Windows 还是 Linux。
 2. 如果是 Windows：
    - 优先使用 `pwsh -File .\scripts\bootstrap\one-shot-setup.ps1`
@@ -52,6 +52,7 @@
    - 优先建议 `superpowers`、`hookify`
    - 不要默认要求第一次就安装 `everything-claude-code`、`claude-code-settings`、`ralph-loop`
 8. 在整个过程中，不要修改仓库运行时逻辑；只做安装、检查、结论整理。
+> 提醒：AI 智能治理层相关配置不要直接复用仓库示例值。启用该层时，必须由用户自行提供并确认 `url`、`apikey`、`model`；如果由 AI 协助安装或生成配置，提示词里也应先明确提醒用户填写这三项，再继续写入配置。
 ```
 
 ## Windows 满血安装提示词
@@ -65,7 +66,7 @@
 
 ```text
 请你把当前仓库按 Windows 推荐满血路径安装好。
-
+仓库地址：https://github.com/foryourhealth111-pixel/Vibe-Skills
 要求：
 
 1. 使用 `pwsh` 优先执行：
@@ -83,6 +84,7 @@
 6. 宿主插件默认策略遵守：
    - 优先建议 `superpowers`、`hookify`
    - 不默认要求第一次就安装 `everything-claude-code`、`claude-code-settings`、`ralph-loop`
+> 提醒：AI 智能治理层相关配置不要直接复用仓库示例值。启用该层时，必须由用户自行提供并确认 `url`、`apikey`、`model`；如果由 AI 协助安装或生成配置，提示词里也应先明确提醒用户填写这三项，再继续写入配置。
 ```
 
 ## Linux 满血安装提示词
@@ -96,7 +98,7 @@
 
 ```text
 请你把当前仓库按 Linux 推荐满血路径安装好，并先判断当前 Linux 是否具备 `pwsh`。
-
+仓库地址：https://github.com/foryourhealth111-pixel/Vibe-Skills 
 要求：
 
 1. 先检查 `pwsh` 是否可用。
@@ -116,17 +118,10 @@
    - 优先建议 `superpowers`、`hookify`
    - 不默认要求第一次就安装 `everything-claude-code`、`claude-code-settings`、`ralph-loop`
 7. 如果结果为 `manual_actions_pending`，列出剩余人工动作，不要把它说成安装失败。
+> 提醒：AI 智能治理层相关配置不要直接复用仓库示例值。启用该层时，必须由用户自行提供并确认 `url`、`apikey`、`model`；如果由 AI 协助安装或生成配置，提示词里也应先明确提醒用户填写这三项，再继续写入配置。
+
 ```
 
-## 新手简版提示词
-
-如果你只是想让用户“一句话开装”，可以给这个短版本：
-
-```text
-请按当前平台的 VibeSkills 推荐满血路径帮我完成安装：
-自动识别 Windows / Linux，运行 one-shot bootstrap 和 deep doctor，并严格区分 fully_ready、manual_actions_pending、core_install_incomplete。
-不要伪装宿主插件、MCP、provider secrets 已自动装好；如果仍需人工动作，请列出清单。默认优先建议 `superpowers`、`hookify`，不要默认要求第一次就把其他 3 个宿主插件全装上。
-```
 
 ## 给用户的话术建议
 
