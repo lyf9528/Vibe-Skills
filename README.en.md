@@ -273,6 +273,7 @@ We know that building in isolation cannot keep up with the speed of the AI era. 
 ⚠️ **Invocation note**: to stay compatible with general-purpose agents, this project uses a **Skills-format architecture**. Please activate it through your host environment's Skills invocation flow. **Do not** run it directly as a standalone CLI program.
 * In **Claude Code**, type: `/vibe`
 * In **Codex**, type: `$vibe`
+* The usage is the same as calling skills, such as in Codex: "I want you to design a XXXX $vibe". In Claude Code, it would be: "I want you to design a XXX /vibe". Then, in each round, you need to input the displayed vibe call (ensuring each round is under the management of vibeskills), such as: "I want to complete the subsequent tasks according to this plan $vibe".
 
 ### 📚 Navigation and guides
 
