@@ -2,6 +2,29 @@
 
 本目录用于对外公开的安装与自定义接入说明。
 
+## 🚀 快速导航
+
+### 新用户安装
+
+**推荐使用精简提示词**（已去重优化）：
+
+- 📦 **[全量版本安装](./prompts/full-version-install.md)** - 开箱即用，包含完整功能
+- 🔧 **[框架版本安装](./prompts/framework-only-install.md)** - 只安装治理框架底座
+
+### 已有用户更新
+
+- 🔄 **[全量版本更新](./prompts/full-version-update.md)** - 更新已安装的全量版本
+- 🔄 **[框架版本更新](./prompts/framework-only-update.md)** - 更新已安装的框架版本
+
+### 参考文档
+
+- 📋 **[安装规则说明](./installation-rules.md)** - 13条核心安装规则
+- ⚙️ **[配置指南](./configuration-guide.md)** - VCO配置详细说明
+
+---
+
+## 📖 版本说明
+
 当前对外公开版本收束为两种：
 
 - `全量版本 + 可自定义添加治理`

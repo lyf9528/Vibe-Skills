@@ -68,7 +68,109 @@ Traditional Skills repositories answer: _"What tools do I have here?"_ VibeSkill
 | AI Quirks & Illusions: Deleting primary files by mistake when clearing backups; a bad habit of writing silent fallback mechanisms, then confidently claiming early success while the primary functionality is actually quite poor.           | Built-in Guardrails: Includes strict rules, such as prohibiting bulk file deletion via commands (forcing one-by-one deletion to prevent accidents). Silent automated fallbacks are banned; any necessary fallback must trigger an explicit warning to the user 👆.                                                          |
 | High Cognitive Load: Users must rely on their own experience to regulate AI workflows, requiring steep learning curves and constant vigilance.                                                                                               | Guided Framework: The system actively guides the user through clarifying requirements, confirming execution plans, locking in workflow documents, and running concurrent multi-agents (allocating tasks and auto-invoking skills based on the plan), down to automated testing and iteration until the task is complete 👆. |
 
-**With so many skills available, will the sheer number of options lead to a token explosion? Under the governance framework, this will certainly result in excessive token consumption（30k initial context）, but not to the point of a token explosion. This is because routing doesn't provide the model with so many options; instead, it's triggered based on the user's task. The core logic is: user command - AI-assisted governance discovers keywords representing user intent - keywords trigger skill routing, and so on.**
+### About Token Consumption
+
+**With so many skills available, will the sheer number of options lead to a token explosion?**
+
+Under the governance framework, there will be additional token consumption (approximately 30k initial context), but it won't lead to a token explosion. This is because routing doesn't simply throw all options at the model, but uses an intelligent triggering mechanism: **user command → AI-assisted governance discovers intent keywords → keywords trigger skill routing**.
+
+---
+
+## 🔀 Intelligent Routing Mechanism: How 340+ Skills Coordinate Without Conflict
+
+Facing 340+ skills, you might worry: _"With so many similar skills, will they fight each other? How does the system know which one to use?"_
+
+### How Routing Works
+
+VibeSkills uses the **Canonical Router** as the single routing decision center:
+
+```mermaid
+graph LR
+    A[User Task] --> B{Canonical Router}
+    B --> C[Intent Recognition]
+    C --> D[Keyword Extraction]
+    D --> E[Skill Matching]
+    E --> F[Conflict Detection]
+    F --> G[Priority Sorting]
+    G --> H[Routing Decision]
+    H --> I[Execute Skill]
+
+    style B fill:#7B61FF,stroke:#fff,stroke-width:2px,color:#fff
+    style F fill:#FF9800,stroke:#fff,stroke-width:2px,color:#fff
+```
+
+### One Skill or Multiple?
+
+**Core Principle: A task typically routes to one primary skill, but that skill can call other skills as sub-processes.**
+
+- **Single Primary Route**: For a user's clear task, the Canonical Router selects **one best-matching primary skill**
+- **Skill Composition**: The primary skill can call other skills as needed during execution (e.g., `vibe` can call `speckit-clarify`, `aios-architect`, etc.)
+- **Governed Coordination**: Multiple skills coordinate through governance rules, not random combinations
+
+### Handling Conflicts Between Similar Skills
+
+When multiple skills seem capable of completing a task, the router avoids conflicts through these mechanisms:
+
+#### 1. **Priority Rules**
+Each skill has clear priority and applicable scenarios:
+- `vibe`: Governed workflow, requires complete requirement clarification and planned execution
+- `autonomous-builder`: Autonomous building, suitable for clear development tasks
+- `speckit-implement`: Standardized implementation, suitable for scenarios with clear specs
+
+#### 2. **Context Matching**
+The router analyzes:
+- Task complexity (simple modification vs complex project)
+- Whether multi-stage execution is needed
+- Whether multi-agent coordination is needed
+- User's explicit preference (e.g., using `/vibe` explicitly)
+
+#### 3. **Mutual Exclusion Rules**
+The 129 governance rules include mutual exclusion rules, such as:
+- Cannot run multiple skills that modify the same file simultaneously
+- Cannot run conflicting workflow modes simultaneously
+- Certain skill combinations are explicitly prohibited
+
+#### 4. **Degradation and Fallback**
+If the preferred skill is unavailable or fails:
+- The router tries alternative skills by priority
+- Clear fallback strategies and error handling
+- Won't fall into infinite loops or retries
+
+### Real Example
+
+**Scenario: User says "Help me refactor this project"**
+
+1. **Intent Recognition**: This is a complex refactoring task
+2. **Keyword Extraction**: refactor, project, code quality
+3. **Skill Matching**:
+   - Candidate 1: `vibe` (governed workflow, suitable for complex tasks)
+   - Candidate 2: `autonomous-builder` (autonomous building)
+   - Candidate 3: `systematic-debugging` (systematic debugging)
+4. **Conflict Detection**: These skills don't conflict, but need to choose the most suitable
+5. **Priority Sorting**:
+   - If user used `/vibe`, directly choose `vibe`
+   - If task needs multi-stage execution, choose `vibe`
+   - If task boundaries are clear, might choose `autonomous-builder`
+6. **Routing Decision**: Choose `vibe`, because refactoring typically requires:
+   - Requirement clarification (which parts need refactoring)
+   - Plan formulation (refactoring steps)
+   - Phased execution
+   - Verification and testing
+
+### Why This Design?
+
+Traditional skill repositories let AI "freely choose", resulting in:
+- ❌ AI can't remember what skills exist
+- ❌ Similar skills conflict with each other
+- ❌ Execution path is unpredictable
+
+VibeSkills' routing mechanism ensures:
+- ✅ **Determinism**: Same task always follows same routing logic
+- ✅ **Traceability**: Every routing decision has clear reasoning
+- ✅ **Controllability**: Users can override default routing through explicit invocation (e.g., `/vibe`)
+- ✅ **Stability**: 129 governance rules prevent conflicts and divergence
+
+---
 
 ## ✦ Panoramic Capability Map: Your all-in-one workspace
 
