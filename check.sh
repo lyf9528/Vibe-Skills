@@ -31,8 +31,9 @@ resolve_host_id() {
   case "${host_id}" in
     codex) printf '%s' 'codex' ;;
     claude|claude-code) printf '%s' 'claude-code' ;;
+    windsurf) printf '%s' 'windsurf' ;;
     *)
-      echo "[FAIL] Unsupported VCO host id: ${host_id}. Supported values: codex, claude-code" >&2
+      echo "[FAIL] Unsupported VCO host id: ${host_id}. Supported values: codex, claude-code, windsurf" >&2
       exit 1
       ;;
   esac
@@ -43,6 +44,7 @@ resolve_default_target_root() {
   case "${host_id}" in
     codex) printf '%s' "${CODEX_HOME:-${HOME}/.codex}" ;;
     claude-code) printf '%s' "${CLAUDE_HOME:-${HOME}/.claude}" ;;
+    windsurf) printf '%s' "${WINDSURF_HOME:-${HOME}/.codeium/windsurf}" ;;
     *)
       echo "[FAIL] Unsupported VCO host id for target-root resolution: ${host_id}" >&2
       exit 1
@@ -53,17 +55,27 @@ resolve_default_target_root() {
 assert_target_root_matches_host_intent() {
   local target_root="$1"
   local host_id="$2"
-  local leaf
+  local leaf normalized_target is_codex_root is_claude_root is_windsurf_root
   leaf="$(basename "${target_root}")"
   leaf="$(printf '%s' "${leaf}" | tr '[:upper:]' '[:lower:]')"
-  if [[ "${host_id}" == "codex" && "${leaf}" == ".claude" ]]; then
-    echo "[FAIL] Target root '${target_root}' looks like a Claude Code home, but host='codex'." >&2
-    echo "[FAIL] Pass --host claude-code for preview guidance or use a Codex target root." >&2
+  normalized_target="$(printf '%s' "${target_root}" | tr '\\' '/' | tr '[:upper:]' '[:lower:]')"
+  normalized_target="${normalized_target%/}"
+  is_codex_root="false"
+  is_claude_root="false"
+  is_windsurf_root="false"
+  [[ "${leaf}" == ".codex" ]] && is_codex_root="true"
+  [[ "${leaf}" == ".claude" ]] && is_claude_root="true"
+  [[ "${normalized_target}" == */.codeium/windsurf ]] && is_windsurf_root="true"
+  if [[ "${host_id}" == "codex" && ( "${is_claude_root}" == "true" || "${is_windsurf_root}" == "true" ) ]]; then
+    echo "[FAIL] Target root '${target_root}' looks like a non-Codex host root, but host='codex'." >&2
     exit 1
   fi
-  if [[ "${host_id}" == "claude-code" && "${leaf}" == ".codex" ]]; then
-    echo "[FAIL] Target root '${target_root}' looks like a Codex home, but host='claude-code'." >&2
-    echo "[FAIL] Use --host codex for the official closure lane or choose a Claude Code target root." >&2
+  if [[ "${host_id}" == "claude-code" && ( "${is_codex_root}" == "true" || "${is_windsurf_root}" == "true" ) ]]; then
+    echo "[FAIL] Target root '${target_root}' looks like a non-Claude host root, but host='claude-code'." >&2
+    exit 1
+  fi
+  if [[ "${host_id}" == "windsurf" && ( "${is_codex_root}" == "true" || "${is_claude_root}" == "true" ) ]]; then
+    echo "[FAIL] Target root '${target_root}' looks like a non-Windsurf host root, but host='windsurf'." >&2
     exit 1
   fi
 }
