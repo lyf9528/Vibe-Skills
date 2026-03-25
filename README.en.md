@@ -18,7 +18,7 @@
 
 ### More than a skill collection — your **personal AI operating system**
 
-If your AI supports skills, VibeSkills works. 340+ skills spanning coding, research, data science, life sciences & creative work.
+If your AI supports skills, VibeSkills works. 340+ skills spanning coding, research, data science & creative work.
 
 <br/>
 
@@ -98,7 +98,7 @@ If your AI supports skills, VibeSkills works. 340+ skills spanning coding, resea
 ## ✨ What makes it different?
 
 > Traditional skill repos answer: _"What tools do I have?"_
-> **VibeSkills tackles the core pain point of heavy AI users: _"How do I reliably get work done?"_**
+> **VibeSkills tackles the core pain point of heavy AI users: _"How do I manage and invoke large numbers of Skills, and get work done efficiently and reliably?"_**
 
 <br/>
 
