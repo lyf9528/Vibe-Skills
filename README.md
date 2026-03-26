@@ -514,7 +514,7 @@ Help me build a genomics analysis pipeline /vibe
 
 ### Customize: Add your own skills
 
-→ [Custom workflow & skill onboarding guide](./docs/install/custom-workflow-onboarding.md)
+→ [Custom workflow & skill onboarding guide](./docs/install/custom-workflow-onboarding.en.md)
 
 ## 📦 Standing on the Shoulders of Giants
 
@@ -549,7 +549,7 @@ _You know what this is now. All it takes from here is one prompt:_
 |:---:|:---:|:---|
 | **Claude Code** | `/vibe` | `I want you to design a XXX /vibe` |
 | **Codex** | `$vibe` | `I want you to design a XXXX $vibe` |
-| **OpenClaw** | Skills entry | Refer to OpenClaw host docs |
+| **OpenClaw** | Skills entry | Refer to the host docs |
 | **Cursor / Windsurf** | Skills entry | Refer to each platform's Skills docs |
 
 </div>
@@ -558,7 +558,7 @@ _You know what this is now. All it takes from here is one prompt:_
 
 > 💡 **Recommended practice**: If you want every subsequent turn to be explicitly governed by the VibeSkills runtime, keep appending `$vibe` or `/vibe` in each turn. If you don't include the invocation syntax in a turn, that turn should not be treated as "explicitly locked in vibe runtime".
 
-**Currently supported platforms**: `codex` (most complete governed path) · `claude-code` · `cursor` · `windsurf` (preview runtime-core lane) · `openclaw` (preview runtime-core path)
+**Currently supported platforms**: `codex` (most complete governed path) · `claude-code` · `cursor` · `windsurf` (supported install-and-use path with runtime-adapter integration) · `openclaw` (preview runtime-core path)
 
 <br/>
 
@@ -577,8 +577,8 @@ _You know what this is now. All it takes from here is one prompt:_
 **Installation & Configuration**
 
 - ⚡️ [Prompt-based install (recommended)](./docs/install/one-click-install-release-copy.en.md)
-- 🧩 [Custom workflow onboarding](./docs/install/custom-workflow-onboarding.md)
-- 🐾 [OpenClaw runtime-core preview path](./docs/install/openclaw-path.md)
+- 🧩 [Custom workflow onboarding](./docs/install/custom-workflow-onboarding.en.md)
+- 📄 [OpenClaw host notes](./docs/install/openclaw-path.en.md)
 - 📁 [Manual copy install (offline)](./docs/install/manual-copy-install.en.md)
 - 🛠 [Advanced host / lane reference](./docs/install/recommended-full-path.en.md)
 - 🧊 [Cold start & other environments](./docs/cold-start-install-paths.en.md)

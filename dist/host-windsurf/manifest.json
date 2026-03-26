@@ -5,8 +5,8 @@
   "host_id": "windsurf",
   "stability": "preview",
   "source_release": {
-    "version": "2.3.47",
-    "updated": "2026-03-15"
+    "version": "2.3.49",
+    "updated": "2026-03-23"
   },
   "summary": "Windsurf host adapter preview. Uses the shared runtime-core installer and host-root payloads without claiming governed closure.",
   "runtime_ownership": {
@@ -18,6 +18,13 @@
     "install_secondary": "install.sh --host windsurf",
     "check_primary": "check.ps1 --host windsurf",
     "check_secondary": "check.sh --host windsurf"
+  },
+  "docs": {
+    "distribution_lanes": "docs/universalization/distribution-lanes.md",
+    "install_matrix": "docs/universalization/install-matrix.md",
+    "platform_install_matrix": "docs/universalization/platform-install-matrix.md",
+    "platform_support_matrix": "docs/universalization/platform-support-matrix.md",
+    "host_capability_matrix": "docs/universalization/host-capability-matrix.md"
   },
   "capability_promises": [
     {
@@ -42,5 +49,16 @@
     "governed_closure_claim",
     "undocumented_host_settings_claims",
     "workspace_projection_by_default"
-  ]
+  ],
+  "support": {
+    "platform_support": {
+      "truth_source": "docs/universalization/platform-support-matrix.md",
+      "interpretation": "not_yet_proven_for_this_lane"
+    },
+    "host_support": {
+      "truth_source": "docs/universalization/host-capability-matrix.md",
+      "interpretation": "host_matrix_rating",
+      "rating": "preview"
+    }
+  }
 }
